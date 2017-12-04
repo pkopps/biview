@@ -150,7 +150,8 @@ prev_yr_var_df <- right_join(
       round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
       /
       (UQ(metric_prev_yr_name)), 2 )
-    )
+    ) %>%
+  ungroup()
 
 ###
 
@@ -163,7 +164,7 @@ if(!missing(metric_op2) & !missing(df_op2)){
 
   final <- left_join(
     l,
-    r %>% select(mth_num_in_yr, !!metric_op2, !!metric_op2_var),
+    r %>% ungroup() %>% select(mth_num_in_yr, !!metric_op2, !!metric_op2_var),
     by = "mth_num_in_yr"
     )
 
@@ -171,7 +172,7 @@ if(!missing(metric_op2) & !missing(df_op2)){
 
   final <- left_join(
     l,
-    r %>% select(mth_num_in_yr),
+    r %>% ungroup() %>% select(mth_num_in_yr),
     by = "mth_num_in_yr")
 
 }
