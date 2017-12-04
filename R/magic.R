@@ -33,6 +33,8 @@ magic <- function(df,
   year_view(
     df = df,
     metric = !!metric,
+    df_op2 = df_op2,
+    metric_op2 = !!metric_op2,
     show_type = show_type,
     new_name = new_name,
     run_rate = FALSE
@@ -41,6 +43,8 @@ magic <- function(df,
   year_view(
     df = df,
     metric = !!metric,
+    df_op2 = df_op2,
+    metric_op2 = !!metric_op2,
     show_type = show_type,
     new_name = new_name,
     run_rate = run_rate
