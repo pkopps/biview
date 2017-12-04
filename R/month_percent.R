@@ -4,8 +4,11 @@ month_percent <- function(
   df,
   numerator,
   denominator,
+  df_op2,
+  metric_op2,
   run_rate = FALSE,
-  show_type = FALSE
+  show_type = FALSE,
+  new_name = NULL
   # ,
   # op2 = FALSE
 ) {
@@ -15,88 +18,128 @@ month_percent <- function(
   if(missing(denominator)){ stop("'denominator' argument is mandatory") }
 
   numerator <- enquo(numerator)
+  numerator_name <- quo_name(numerator)
+
   denominator <- enquo(denominator)
+  denominator_name <- quo_name(denominator)
+
+  cur_yr <- max(df$yr_num)
+  prev_yr <- cur_yr - 1
+  # cur_mth <- max(df$mth_num_in_yr)
+  cur_mth <- df %>% filter(yr_num == cur_yr) %>% summarise(max(mth_num_in_yr)) %>% pull()
+  prev_mth <- cur_mth - 1
+  today <- max(df$date_value)
+  today_prev_mth <- today - 30
+
+  ###### define order of metrics for output ######
+
+  if(!missing(new_name)){
+    ordering_array <- c("type",
+                        new_name,
+                        "Prior Year",
+                        "Variance vs. Prior Year")
+  }else{
+    ordering_array <- c("type",
+                        "rate_cur_yr",
+                        "rate_prev_yr",
+                        "rate_prev_yr_var")
+  }
+
+  ###
 
   cur_yr_df <- df %>%
     filter(yr_num == cur_yr) %>%
     group_by(yr_num, mth_num_in_yr) %>%
     summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
     mutate(
-      rate_cur_yr = ( UQ(numerator) / UQ(members) ),
+      rate_cur_yr = round( 100 * ( UQ(numerator) / UQ(denominator) ), 2),
       type = "actual") %>%
-    ungroup()
+    ungroup() %>%
+    select(-yr_num, -!!numerator, -!!denominator)
 
-  ### INJECT MONTH RUN RATE HERE ###
+  ###### opt in to replace actual measures for run rate here ######
 
-  # if(run_rate == TRUE){
-  #
-  #   df <- df %>%
-  #     filter(( yr_num != cur_yr | mth_num_in_yr != cur_month )) %>%
-  #     rbind(month_run_rate(df = df, metric = !!metric))
-  #
-  # }
+  if(run_rate == TRUE){
 
-  ### -------------------------- ###
+    cur_yr_df <- month_percent_run_rate(df = df, numerator = !!numerator, denominator = !!denominator)
 
-  suppressMessages({
+  }
 
-    # if(op2 == TRUE){
+  ###
 
-      df <- full_join(df, op2 %>% select(yr_num, mth_num_in_yr, revenue_per_member_op2)) %>%
-        arrange(yr_num %>% desc) %>%
-        mutate(revenue_per_member_op2_var =
-                  round(
-                  (revenue_per_member - revenue_per_member_op2)
-                   /
-                  (revenue_per_member)
-                  * 100, 2)
-        ) %>% ungroup()
+  prev_yr_df <- df %>% filter(yr_num == prev_yr) %>%
+    group_by(yr_num, mth_num_in_yr) %>%
+    summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
+    mutate(
+      rate_prev_yr = round( 100 * ( UQ(numerator) / UQ(denominator) ), 2),
+      type = "actual") %>%
+    ungroup() %>%
+    select(rate_prev_yr)
 
-    # }
+  final <-
+    cbind(cur_yr_df, prev_yr_df) %>%
+    mutate(rate_prev_yr_var = round( (rate_cur_yr - rate_prev_yr) , 2) )
 
-  })
+  print(final)
 
-  cur_yr_df <- df %>% filter(yr_num == cur_yr)
-  prev_yr_df <- df %>% filter(yr_num == prev_yr)
+  ###### Change names of OP2 columns if OP2 arguments are provided ######
 
-  suppressMessages({
-    prev_yr_var_df <- right_join(cur_yr_df %>% select(mth_num_in_yr, revenue_per_member, type),
-                                 prev_yr_df %>% select(mth_num_in_yr, revenue_per_member),
-                                 by = c("mth_num_in_yr" = "mth_num_in_yr"),
-                                 suffix = c("_cur_yr","_prev_yr"))
-  })
+  if(!missing(new_name) & missing(metric_op2)){
 
-  final <- prev_yr_var_df %>% mutate(revenue_per_member_prev_yr_var =
-                                                round((revenue_per_member_cur_yr - revenue_per_member_prev_yr)/(revenue_per_member_cur_yr) * 100, 2)
-                                              #   ,
-                                              # trials_prev_yr_var =
-                                              #   ((trials_cur_yr - trials_prev_yr)/trials_cur_yr) * 100)
-  )
+    final <- final %>%
+      rename(
+        !!new_name := rate_cur_yr,
+        `Prior Year` = rate_prev_yr,
+        `Variance vs. Prior Year` = rate_prev_yr_var
+      ) %>%
+      mutate(
+        `OP2 Plan` = NA,
+        `Variance vs. Plan` = NA
+      )
 
-  print(df)
+  }else if(!missing(new_name) & !missing(metric_op2)){
 
-  suppressMessages({
+    final <- final %>%
+      rename(
+        !!new_name := UQ(rate_cur_yr),
+        `Prior Year` = UQ(rate_prev_yr),
+        `Variance vs. Prior Year` = UQ(rate_prev_yr_var),
+        `OP2 Plan` = UQ(metric_op2_name), ## TOCHANGE
+        `Variance vs. Plan` = UQ(metric_op2_var_name) ## TOCHANGE
+      )
 
-    # if(op2 == TRUE){
+  }
 
-    final <- left_join(final,
-                       df %>% filter(yr_num == cur_yr) %>%
-                         select(mth_num_in_yr, revenue_per_member_op2, revenue_per_member_op2_var))
+  ###
 
-    # }
+  if(run_rate == FALSE){
+    final <-
+      final %>%
+      gather(metric, value, -mth_num_in_yr) %>%
+      spread(mth_num_in_yr, value)
+    # %>%
+    #   rename(cur_mth = value)
 
-  })
+  }else{
+    final <-
+      final %>%
+      rename(cur_mth = value) %>%
+      gather(metric, value, -mth_num_in_yr) %>%
+      spread(mth_num_in_yr, value)
 
-  final <- final %>% gather(metric, value, -mth_num_in_yr) %>%
-    spread(mth_num_in_yr, value)
+  }
 
   if(show_type){
-    final
+    final <- final
   }
   else{
-    final %>% filter(metric != "type")
+    final <- final %>% filter(metric != "type")
   }
 
-}
+  final <- final %>% arrange(
+    metric = ordered(metric, levels = ordering_array)
+  )
 
-# month_rate_view(df, num = revenue, denom = members, show_type = TRUE) %>% View()
+  final
+
+}
