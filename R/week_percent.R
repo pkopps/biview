@@ -1,6 +1,6 @@
-# week view rate
+# week percent
 
-week_view_rate <- function(
+week_percent <- function(
   df,
   numerator,
   denominator,
@@ -17,8 +17,8 @@ week_view_rate <- function(
 
   cur_yr <- max(df$yr_num)
   prev_yr <- cur_yr - 1
-  cur_wk <- df %>% filter(yr_num == cur_yr) %>% summarise(week(max(date_value))) %>% pull()
-  prev_wk <- df %>% filter(yr_num == cur_yr) %>% summarise(week(max(date_value) - 7)) %>% pull()
+  cur_wk <- df %>% filter(yr_num == cur_yr) %>% summarise(lubridate::week(max(date_value))) %>% pull()
+  prev_wk <- df %>% filter(yr_num == cur_yr) %>% summarise(lubridate::week(max(date_value) - 7)) %>% pull()
 
   if(!missing(new_name)) new_name <- quo_name(new_name)
 

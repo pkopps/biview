@@ -1,4 +1,4 @@
-#week_view3
+#week
 
 week <- function(df,
                        metric,

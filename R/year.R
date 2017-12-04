@@ -3,6 +3,8 @@
 year_view <- function(
   df,
   metric,
+  df_op2,
+  metric_op2,
   show_type = FALSE,
   new_name = NULL,
   run_rate = TRUE
@@ -41,23 +43,53 @@ year_view <- function(
 
   metric_prev_yr_var_name <- paste(metric_name, "prev_yr_var", sep = "_")
 
+if(!missing(metric_op2)){
+
   metric_op2 <- enquo(metric_op2)
   metric_op2_name <- quo_name(metric_op2)
 
   metric_op2_var_name <- paste(metric_name, "op2_var", sep = "_")
   metric_op2_var <- enquo(metric_op2_var_name)
 
-  if(!missing(new_name)){
+}
+
+  ###### define order of metrics for output ######
+
+  if(missing(new_name) & missing(metric_op2)){
+    ordering_array <- c("type",
+                        metric_cur_yr_name,
+                        metric_prev_yr_name,
+                        metric_prev_yr_var_name
+                        # ,
+                        # metric_op2_name,
+                        # metric_op2_var_name
+    )
+  }else if(missing(new_name) & !missing(metric_op2)){
+    ordering_array <- c("type",
+                        metric_cur_yr_name,
+                        metric_prev_yr_name,
+                        metric_prev_yr_var_name,
+                        metric_op2_name,
+                        metric_op2_var_name
+    )
+  }else if(!missing(new_name) & missing(metric_op2)){
     ordering_array <- c("type",
                         new_name,
                         "Prior Year",
                         "Variance vs. Prior Year")
-  }else{
+  }else if(!missing(new_name) & !missing(metric_op2)){
     ordering_array <- c("type",
-                        metric_cur_yr_name,
-                        metric_prev_yr_name,
-                        metric_prev_yr_var_name)
+                        new_name,
+                        "Prior Year",
+                        "Variance vs. Prior Year",
+                        "OP2 Plan",
+                        "Variance vs. Plan")
   }
+  # else{
+  #   ordering_array <- NULL
+  # }
+
+  ###
 
   cur_yr_df <- df %>% filter(yr_num == cur_yr) %>%
     group_by(yr_num) %>%
@@ -85,7 +117,31 @@ year_view <- function(
 
   ###
 
-  prev_yr_var_df <-
+  ###### opt in to add op2 view ######
+
+  if(!missing(metric_op2) & !missing(df_op2)){
+
+    r <- df_op2 %>%
+      filter(yr_num == cur_yr) %>%
+      select(yr_num, !!metric_op2) %>%
+      group_by(yr_num) %>%
+      summarise_at(vars(!!metric_op2), funs(sum)) %>%
+      select(!!metric_op2)
+
+    cur_yr_df <- cbind(cur_yr_df, r) %>% mutate(
+      !!metric_op2_var_name := round(
+        100 * ( (UQ(metric_cur_yr_name)) - (!!metric_op2) )
+        /
+          (UQ(metric_cur_yr_name))
+        , 2)
+    ) %>%
+      ungroup()
+
+  }
+
+  ###
+
+  final <-
     cbind(cur_yr_df, prev_yr_df) %>% mutate(
        !!metric_prev_yr_var_name :=
          round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
@@ -105,22 +161,36 @@ year_view <- function(
 
   # }
 
-  if(!missing(new_name)){
+  ###### Change names of OP2 columns if new name `AND` OP2 arguments are provided ######
 
-    prev_yr_var_df <- prev_yr_var_df %>% rename(!!new_name := UQ(metric_cur_yr_name),
-                                                `Prior Year` = UQ(metric_prev_yr_name),
-                                                `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name))
+  if(!missing(new_name) & missing(metric_op2)){
+
+    final <- final %>%
+      rename(!!new_name := UQ(metric_cur_yr_name),
+             `Prior Year` = UQ(metric_prev_yr_name),
+             `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name)
+      )
+
+  }else if(!missing(new_name) & !missing(metric_op2)){
+
+    final <- final %>%
+      rename(!!new_name := UQ(metric_cur_yr_name),
+             `Prior Year` = UQ(metric_prev_yr_name),
+             `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name),
+             `OP2 Plan` = UQ(metric_op2_name),
+             `Variance vs. Plan` = UQ(metric_op2_var_name)
+      )
 
   }
 
   if(run_rate == FALSE){
     final <-
-      prev_yr_var_df %>%
+      final %>%
       gather(metric, value) %>%
       rename(YTD = value)
   }else{
     final <-
-      prev_yr_var_df %>%
+      final %>%
       gather(metric, value) %>%
       rename(`Full Year` = value)
   }

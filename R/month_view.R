@@ -3,8 +3,6 @@
 month_view <- function(
   df,
   metric,
-  # df_op1,
-  # metric_op1,
   df_op2,
   metric_op2,
   run_rate = TRUE,
@@ -48,16 +46,6 @@ month_view <- function(
   metric_prev_yr_var_name <- paste(metric_name, "prev_yr_var", sep = "_")
   metric_prev_yr_var <- enquo(metric_prev_yr_var_name)
 
-# if(!missing(metric_op1)){
-#
-#   metric_op1 <- enquo(metric_op1)
-#   metric_op1_name <- quo_name(metric_op1)
-#
-#   metric_op1_var_name <- paste(metric_name, "op1_var", sep = "_")
-#   metric_op1_var <- enquo(metric_op1_var_name)
-#
-# }
-
 if(!missing(metric_op2)){
 
   metric_op2 <- enquo(metric_op2)
@@ -67,14 +55,6 @@ if(!missing(metric_op2)){
   metric_op2_var <- enquo(metric_op2_var_name)
 
 }
-
-  ### TOREPLACE: COPY IS EXPENSIVE ###
-
-  # df_ <- df
-
-  #####################################
-
-###
 
 ###### define order of metrics for output ######
 
@@ -174,50 +154,49 @@ prev_yr_var_df <- right_join(
 
 ###
 
-###### TOEXPLAIN ######
+###### Inlcude OP2 columns if OP2 arguments are provided ######
+
+  l <- prev_yr_var_df %>% ungroup()
+  r <- df %>% filter(yr_num == cur_yr)
 
 if(!missing(metric_op2) & !missing(df_op2)){
 
   final <- left_join(
-    prev_yr_var_df %>% ungroup(),
-    df %>% filter(yr_num == cur_yr) %>%
-      select(mth_num_in_yr, !!metric_op2, !!metric_op2_var),
-    by = "mth_num_in_yr")
-
-  # final <- final %>% gather(metric, value, -mth_num_in_yr) %>%
-  #   spread(mth_num_in_yr, value)
+    l,
+    r %>% select(mth_num_in_yr, !!metric_op2, !!metric_op2_var),
+    by = "mth_num_in_yr"
+    )
 
 }else{
 
   final <- left_join(
-    prev_yr_var_df %>% ungroup(),
-    df %>% filter(yr_num == cur_yr) %>% ungroup() %>%
-      select(mth_num_in_yr
-             # ,
-             # !!metric_op2,
-             # !!metric_op2_var
-             ),
+    l,
+    r %>% select(mth_num_in_yr),
     by = "mth_num_in_yr")
 
 }
 
 ###
 
-###### TOEXPLAIN ######
+###### Change names of OP2 columns if OP2 arguments are provided ######
 
 if(!missing(new_name) & missing(metric_op2)){
 
-  final <- final %>% rename(!!new_name := UQ(metric_cur_yr_name),
-                                              `Prior Year` = UQ(metric_prev_yr_name),
-                                              `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name))
+  final <- final %>%
+    rename(!!new_name := UQ(metric_cur_yr_name),
+          `Prior Year` = UQ(metric_prev_yr_name),
+          `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name)
+          )
 
 }else if(!missing(new_name) & !missing(metric_op2)){
 
-  final <- final %>% rename(!!new_name := UQ(metric_cur_yr_name),
-                                              `Prior Year` = UQ(metric_prev_yr_name),
-                                              `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name),
-                                              `OP2 Plan` = UQ(metric_op2_name),
-                                              `Variance vs. Plan` = UQ(metric_op2_var_name))
+  final <- final %>%
+    rename(!!new_name := UQ(metric_cur_yr_name),
+          `Prior Year` = UQ(metric_prev_yr_name),
+          `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name),
+          `OP2 Plan` = UQ(metric_op2_name),
+          `Variance vs. Plan` = UQ(metric_op2_var_name)
+          )
 
 }
 
