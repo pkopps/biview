@@ -1,26 +1,21 @@
-#week
+#week view
 
-week <- function(df,
-                       metric,
-                       show_type = FALSE,
-                       num_wks_to_show = 4,
-                       new_name = NULL
-                       # ,
-                       # sparkline = FALSE
-                       ) {
+week_view <- function(
+  df,
+  metric,
+  show_type = FALSE,
+  num_wks_to_show = 4,
+  new_name = NULL
+  # ,
+  # sparkline = FALSE
+) {
+
+###### Error messaging ######
 
   if(missing(df)){ stop("'df' argument is mandatory") }
   if(missing(metric)){ stop("'metric' argument is mandatory") }
 
-  # cur_yr <- max(df$yr_num)
-  # prev_yr <- cur_yr - 1
-  # # cur_mth <- max(df$mth_num_in_yr)
-  # cur_mth <- df %>% filter(yr_num == cur_yr) %>% summarise(max(mth_num_in_yr)) %>% pull()
-  # prev_mth <- cur_mth - 1
-  # today <- max(df$date_value)
-  # today_prev_mth <- today - 30
-  # cur_wk <- df %>% filter(yr_num == cur_yr) %>% summarise(week(max(date_value))) %>% pull()
-  # prev_wk <- df %>% filter(yr_num == cur_yr) %>% summarise(week(max(date_value) - 7)) %>% pull()
+###
 
   if(!missing(new_name)) new_name <- quo_name(new_name)
 

@@ -5,6 +5,12 @@ month_view <- function(
   metric,
   df_op2,
   metric_op2,
+  df_3p9,
+  metric_3p9,
+  df_6p6,
+  metric_6p6,
+  df_9p3,
+  metric_9p3,
   run_rate = TRUE,
   show_type = FALSE,
   new_name = NULL
@@ -16,7 +22,7 @@ month_view <- function(
 
 ###
 
-###### if df or metric arguments are missing throw error ######
+###### Error messaging ######
 
   if(missing(df)){ stop("'df' argument is mandatory") }
   if(missing(metric)){ stop("'metric' argument is mandatory") }
@@ -56,6 +62,13 @@ if(!missing(metric_op2)){
 
 }
 
+if(!missing(metric_3p9)){
+
+    metric_3p9 <- enquo(metric_3p9)
+    metric_3p9_name <- quo_name(metric_3p9)
+
+  }
+
 ###### define order of metrics for output ######
 
   if(missing(new_name) & missing(metric_op2)){
@@ -94,26 +107,18 @@ if(!missing(metric_op2)){
 
 ###
 
-###### group and summate data using time dimensions ######
-
-  df_ <- df %>%
-    group_by(yr_num, mth_num_in_yr) %>% # group by year and month
-    summarise_at(vars(!!metric), funs(round_sum)) %>% # get sum of metric per year and month
-    mutate(type = "actual"
-           # ,
-           # metric_op2_name = NA,
-           # metric_op2_var_name = NA
-           ) # create column indicating these are actuals
-
-###
-
 ###### opt in to replace actual measures for run rate here ######
 
 if(run_rate == TRUE){
 
   rr <- month_run_rate(df = df, metric = !!metric)
 
-  df <- df_ %>%
+  df <- df %>%
+    group_by(yr_num, mth_num_in_yr) %>% # group by year and month
+    summarise_at(vars(!!metric), funs(round_sum)) %>% # get sum of metric per year and month
+    mutate(type = "actual") # create column indicating these are actuals
+
+  df <- df %>%
     filter(( yr_num != cur_yr | mth_num_in_yr != cur_mth )) %>%
     rbind(rr)
 
@@ -121,11 +126,20 @@ if(run_rate == TRUE){
 
 ###
 
+###### split, group and summate data using time dimensions ######
+
+  df <- df %>%
+    group_by(yr_num, mth_num_in_yr) %>% # group by year and month
+    summarise_at(vars(!!metric), funs(round_sum)) %>% # get sum of metric per year and month
+    mutate(type = "actual") # create column indicating these are actuals
+
+###
+
 ###### opt in to add op2 view ######
 
 if(!missing(metric_op2) & !missing(df_op2)){
 
-  df <- full_join(df_, df_op2 %>% select(yr_num, mth_num_in_yr, !!metric_op2),
+  df <- full_join(df, df_op2 %>% select(yr_num, mth_num_in_yr, !!metric_op2),
                   by = c("yr_num", "mth_num_in_yr")) %>%
     arrange(yr_num %>% desc) %>% mutate(
       !!metric_op2_var_name := round(
@@ -140,10 +154,28 @@ if(!missing(metric_op2) & !missing(df_op2)){
 
 ###
 
+###### opt in to add 3 + 9 ######
+
+if(!missing(metric_3p9)){ ## if metric_3p9 is provided
+
+  df <-
+    full_join(
+      df,
+      df_3p9 %>% select(yr_num, mth_num_in_yr, !!metric_3p9),
+      by = c("yr_num", "mth_num_in_yr")
+      ) %>%
+    ungroup()
+
+}
+
+###
+
 ###### previous year variance calculation ######
 
-prev_yr_var_df <- right_join(
-  df %>% filter(yr_num == cur_yr) %>% ungroup() %>% select(mth_num_in_yr, !!metric, type), # isolate current year's data
+final <- right_join(
+  df %>% filter(yr_num == cur_yr) %>% ungroup()
+  # %>% select(mth_num_in_yr, !!metric, type)
+  , # isolate current year's data
   df %>% filter(yr_num == prev_yr) %>% ungroup() %>% select(mth_num_in_yr, !!metric), # isolate last year's data
   by = "mth_num_in_yr",
   suffix = c("_cur_yr", "_prev_yr")) %>%
@@ -161,25 +193,37 @@ prev_yr_var_df <- right_join(
 
 ###### Inlcude OP2 columns if OP2 arguments are provided ######
 
-  l <- prev_yr_var_df %>% ungroup()
-  r <- df %>% filter(yr_num == cur_yr)
+# l <- prev_yr_var_df %>% ungroup()
+# r <- df %>% filter(yr_num == cur_yr)
+#
+# print(l)
+# print(r)
 
-if(!missing(metric_op2) & !missing(df_op2)){
+# if(!missing(metric_op2)){
+#
+#   final <- left_join(
+#     l,
+#     r %>% ungroup()
+#     # %>% select(mth_num_in_yr, !!metric_op2, !!metric_op2_var)
+#     ,
+#     by = "mth_num_in_yr"
+#     )
+#
+# }else{
+#
+#   final <- left_join(
+#     l,
+#     r %>% ungroup()
+#     # %>% select(mth_num_in_yr)
+#     ,
+#     by = "mth_num_in_yr")
+#
+# }
 
-  final <- left_join(
-    l,
-    r %>% ungroup() %>% select(mth_num_in_yr, !!metric_op2, !!metric_op2_var),
-    by = "mth_num_in_yr"
-    )
+###
 
-}else{
+###### 3 + 9 TODO ######
 
-  final <- left_join(
-    l,
-    r %>% ungroup() %>% select(mth_num_in_yr),
-    by = "mth_num_in_yr")
-
-}
 
 ###
 

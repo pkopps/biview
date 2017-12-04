@@ -80,8 +80,6 @@ month_percent <- function(
     cbind(cur_yr_df, prev_yr_df) %>%
     mutate(rate_prev_yr_var = round( (rate_cur_yr - rate_prev_yr) , 2) )
 
-  print(final)
-
   ###### Change names of OP2 columns if OP2 arguments are provided ######
 
   if(!missing(new_name) & missing(metric_op2)){
