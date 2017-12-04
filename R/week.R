@@ -1,6 +1,6 @@
 #week_view3
 
-week_view3 <- function(df,
+week <- function(df,
                        metric,
                        show_type = FALSE,
                        num_wks_to_show = 4,

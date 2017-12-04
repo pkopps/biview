@@ -13,7 +13,7 @@ magic <- function(df,
   metric <- enquo(metric)
   metric_op2 <- enquo(metric_op2)
 
-  week_view3(
+  week(
     df = df,
     metric = !!metric,
     show_type = show_type,

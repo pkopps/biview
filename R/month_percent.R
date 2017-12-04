@@ -1,34 +1,28 @@
-# month rate
+# month percent
 
-month_rate_view <- function(
+month_percent <- function(
   df,
-  # metric,
-  num,
-  denom,
-  # run_rate = FALSE,
+  numerator,
+  denominator,
+  run_rate = FALSE,
   show_type = FALSE
   # ,
   # op2 = FALSE
 ) {
 
   if(missing(df)){ stop("'df' argument is mandatory") }
-  if(missing(num)){ stop("'num' argument is mandatory") }
-  if(missing(denom)){ stop("'denom' argument is mandatory") }
+  if(missing(numerator)){ stop("'numerator' argument is mandatory") }
+  if(missing(denominator)){ stop("'denominator' argument is mandatory") }
 
-  # metric <- enquo(metric)
-  # metric_name <- quo_name(metric)
+  numerator <- enquo(numerator)
+  denominator <- enquo(denominator)
 
-  num <- enquo(num)
-  denom <- enquo(denom)
-
-  # print(num) FORDEBUG
-
-  df <- br %>%
+  cur_yr_df <- df %>%
+    filter(yr_num == cur_yr) %>%
     group_by(yr_num, mth_num_in_yr) %>%
-    summarise_at(vars(!!num, !!denom
-    ), funs(sum)) %>%
+    summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
     mutate(
-      revenue_per_member = revenue / members,
+      rate_cur_yr = ( UQ(numerator) / UQ(members) ),
       type = "actual") %>%
     ungroup()
 

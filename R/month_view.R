@@ -70,7 +70,7 @@ if(!missing(metric_op2)){
 
   ### TOREPLACE: COPY IS EXPENSIVE ###
 
-  df_ <- df
+  # df_ <- df
 
   #####################################
 
@@ -116,7 +116,7 @@ if(!missing(metric_op2)){
 
 ###### group and summate data using time dimensions ######
 
-  df <- df %>%
+  df_ <- df %>%
     group_by(yr_num, mth_num_in_yr) %>% # group by year and month
     summarise_at(vars(!!metric), funs(round_sum)) %>% # get sum of metric per year and month
     mutate(type = "actual") # create column indicating these are actuals
@@ -127,9 +127,9 @@ if(!missing(metric_op2)){
 
 if(run_rate == TRUE){
 
-  rr <- month_run_rate(df = df_, metric = !!metric)
+  rr <- month_run_rate(df = df, metric = !!metric)
 
-  df <- df %>%
+  df <- df_ %>%
     filter(( yr_num != cur_yr | mth_num_in_yr != cur_mth )) %>%
     rbind(rr)
 
@@ -141,7 +141,7 @@ if(run_rate == TRUE){
 
 if(!missing(metric_op2) & !missing(df_op2)){
 
-  df <- full_join(df, df_op2 %>% select(yr_num, mth_num_in_yr, !!metric_op2),
+  df <- full_join(df_, df_op2 %>% select(yr_num, mth_num_in_yr, !!metric_op2),
                   by = c("yr_num", "mth_num_in_yr")) %>%
     arrange(yr_num %>% desc) %>% mutate(
       !!metric_op2_var_name := round(

@@ -47,8 +47,6 @@ year_view <- function(
   metric_op2_var_name <- paste(metric_name, "op2_var", sep = "_")
   metric_op2_var <- enquo(metric_op2_var_name)
 
-  df_ <- df
-
   if(!missing(new_name)){
     ordering_array <- c("type",
                         new_name,
@@ -79,7 +77,7 @@ year_view <- function(
 
   if(run_rate == TRUE){
 
-    rr <- year_run_rate(df = df_, metric = !!metric)
+    rr <- year_run_rate(df = df, metric = !!metric)
 
     cur_yr_df <- rr
 
