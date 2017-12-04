@@ -99,7 +99,11 @@ if(!missing(metric_op2)){
   df_ <- df %>%
     group_by(yr_num, mth_num_in_yr) %>% # group by year and month
     summarise_at(vars(!!metric), funs(round_sum)) %>% # get sum of metric per year and month
-    mutate(type = "actual") # create column indicating these are actuals
+    mutate(type = "actual"
+           # ,
+           # metric_op2_name = NA,
+           # metric_op2_var_name = NA
+           ) # create column indicating these are actuals
 
 ###
 
@@ -186,8 +190,9 @@ if(!missing(new_name) & missing(metric_op2)){
   final <- final %>%
     rename(!!new_name := UQ(metric_cur_yr_name),
           `Prior Year` = UQ(metric_prev_yr_name),
-          `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name)
-          )
+          `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name)) %>%
+    mutate(`OP2 Plan` = NA,
+           `Variance vs. Plan` = NA)
 
 }else if(!missing(new_name) & !missing(metric_op2)){
 
