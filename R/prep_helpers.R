@@ -68,3 +68,5 @@ dimensions <- c("date_value",
 
 # sample_goals %>% write_csv("sample_budget_data.csv")
 
+# sample_data2 <- sample_data %>% filter(date_value <= '2017-08-15')
+

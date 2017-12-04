@@ -71,9 +71,6 @@ week_view3 <- function(df,
     filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
     ungroup()
 
-  # print(cur_yr_df)
-  # print(prev_yr_df)
-
   prev_yr_var_df <- right_join(cur_yr_df %>% select(wk_num_in_yr
                                                     # , wk_start_date
                                                     , !!metric, type),
