@@ -28,14 +28,14 @@ magic_percent <- function(df,
     new_name = new_name
   ) -> week_res
 
-  # month_percent(
-  #   df = df,
-  #   numerator = !!numerator,
-  #   denominator = !!denominator,
-  #   show_type = show_type,
-  #   run_rate = run_rate,
-  #   new_name = new_name
-  # ) -> month_res
+  month_percent(
+    df = df,
+    numerator = !!numerator,
+    denominator = !!denominator,
+    show_type = show_type,
+    run_rate = FALSE,
+    new_name = new_name
+  ) -> month_res
 
   year_view_rate(
     df = df,
@@ -55,12 +55,12 @@ magic_percent <- function(df,
     new_name = new_name
   ) -> year_res_rr
 
-  # right_join(week_res, month_res, by = 'metric') %>%
-  #   left_join(year_res_actual, by = 'metric') %>%
-  #   left_join(year_res_rr, by = 'metric') %>%
-  #   mutate_all(funs(replace(., is.na(.), "")))
+  right_join(week_res, month_res, by = 'metric') %>%
+    left_join(year_res_actual, by = 'metric') %>%
+    left_join(year_res_rr, by = 'metric') %>%
+    mutate_all(funs(replace(., is.na(.), "")))
 
-  left_join(week_res, year_res_actual, by = 'metric') %>% left_join(year_res_rr, by = 'metric')
+  # left_join(week_res, year_res_actual, by = 'metric') %>% left_join(year_res_rr, by = 'metric')
 
 }
 
