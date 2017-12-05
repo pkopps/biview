@@ -10,7 +10,7 @@ div_by_one_thousand <- function(x){
 }
 
 round_sum <- function(x){
-  round(sum(x), 2)
+  round(sum(x, na.rm=TRUE), 2)
 }
 
 round_to_two <- function(x){

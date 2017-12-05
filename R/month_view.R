@@ -195,7 +195,7 @@ if(!missing(metric_3p9)){ ## if metric_3p9 is provided
 
 ###### previous year variance calculation ######
 
-final <- right_join(
+prev_yr_var_df <- right_join(
   cur_yr_df %>% ungroup(),
   prev_yr_df %>% ungroup(), # isolate last year's data
   by = "mth_num_in_yr",
@@ -212,39 +212,16 @@ final <- right_join(
 
 ###
 
-###### Inlcude OP2 columns if OP2 arguments are provided ######
+###### 3 + 9 ######
 
-# l <- prev_yr_var_df %>% ungroup()
-# r <- df %>% filter(yr_num == cur_yr)
-#
-# print(l)
-# print(r)
+if(!missing(metric_3p9)){
 
-# if(!missing(metric_op2)){
-#
-#   final <- left_join(
-#     l,
-#     r %>% ungroup()
-#     # %>% select(mth_num_in_yr, !!metric_op2, !!metric_op2_var)
-#     ,
-#     by = "mth_num_in_yr"
-#     )
-#
-# }else{
-#
-#   final <- left_join(
-#     l,
-#     r %>% ungroup()
-#     # %>% select(mth_num_in_yr)
-#     ,
-#     by = "mth_num_in_yr")
-#
-# }
+prev_yr_var_df <- left_join(
+  prev_yr_var_df,
+  df_3p9 %>% select(mth_num_in_yr, !!metric_3p9),
+  by = "mth_num_in_yr")
 
-###
-
-###### 3 + 9 TODO ######
-
+}
 
 ###
 
@@ -252,7 +229,7 @@ final <- right_join(
 
 if(!missing(new_name) & missing(metric_op2)){
 
-  final <- final %>%
+  final <- prev_yr_var_df %>%
     rename(!!new_name := UQ(metric_cur_yr_name),
           `Prior Year` = UQ(metric_prev_yr_name),
           `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name)) %>%
@@ -261,7 +238,7 @@ if(!missing(new_name) & missing(metric_op2)){
 
 }else if(!missing(new_name) & !missing(metric_op2)){
 
-  final <- final %>%
+  final <- prev_yr_var_df %>%
     rename(!!new_name := UQ(metric_cur_yr_name),
           `Prior Year` = UQ(metric_prev_yr_name),
           `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name),
