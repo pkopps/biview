@@ -116,39 +116,62 @@ if(run_rate == TRUE){
   df <- df %>%
     group_by(yr_num, mth_num_in_yr) %>% # group by year and month
     summarise_at(vars(!!metric), funs(round_sum)) %>% # get sum of metric per year and month
-    mutate(type = "actual") # create column indicating these are actuals
+    mutate(type = "actual") %>% # create column indicating these are actuals
+    ungroup()
+
+  cur_yr_df <- df %>%
+    filter(yr_num == cur_yr) %>%
+    filter(mth_num_in_yr != cur_mth ) %>%
+    bind_rows(rr) %>%
+    select(-yr_num) %>%
+    rename(!!metric_cur_yr_name := UQ(metric_name))
+
+  prev_yr_df <- df %>%
+    filter(yr_num == prev_yr) %>%
+    select(-yr_num, -type) %>%
+    rename(!!metric_prev_yr_name := UQ(metric_name))
+
+}else{
 
   df <- df %>%
-    filter(( yr_num != cur_yr | mth_num_in_yr != cur_mth )) %>%
-    rbind(rr)
+    group_by(yr_num, mth_num_in_yr) %>% # group by year and month
+    summarise_at(vars(!!metric), funs(round_sum)) %>% # get sum of metric per year and month
+    mutate(type = "actual") %>% # create column indicating these are actuals
+    ungroup()
+
+  cur_yr_df <- df %>%
+    filter(yr_num == cur_yr) %>%
+    select(-yr_num) %>%
+    rename(!!metric_cur_yr_name := UQ(metric_name))
+
+  prev_yr_df <- df %>%
+    filter(yr_num == prev_yr) %>%
+    select(-yr_num, -type) %>%
+    rename(!!metric_prev_yr_name := UQ(metric_name))
 
 }
 
 ###
 
-###### split, group and summate data using time dimensions ######
-
-  df <- df %>%
-    group_by(yr_num, mth_num_in_yr) %>% # group by year and month
-    summarise_at(vars(!!metric), funs(round_sum)) %>% # get sum of metric per year and month
-    mutate(type = "actual") # create column indicating these are actuals
-
-###
-
 ###### opt in to add op2 view ######
 
-if(!missing(metric_op2) & !missing(df_op2)){
+if(!missing(metric_op2)){
 
-  df <- full_join(df, df_op2 %>% select(yr_num, mth_num_in_yr, !!metric_op2),
-                  by = c("yr_num", "mth_num_in_yr")) %>%
-    arrange(yr_num %>% desc) %>% mutate(
+  cur_yr_df <-
+    full_join(
+      cur_yr_df,
+      df_op2 %>% select(mth_num_in_yr, !!metric_op2),
+      by = c("mth_num_in_yr")
+      ) %>%
+    mutate(
       !!metric_op2_var_name := round(
-        100 * ( (!!metric) - (!!metric_op2) )
-        /
-        (!! metric)
-        , 2)
-    ) %>%
-    ungroup()
+      100 * ( (UQ(metric_cur_yr_name)) - (!!metric_op2)
+                # (UQ(metric_op2_name))
+              ) # numerator
+      /
+      (UQ(metric_cur_yr_name)), # denominator
+      2)
+    )
 
 }
 
@@ -158,7 +181,7 @@ if(!missing(metric_op2) & !missing(df_op2)){
 
 if(!missing(metric_3p9)){ ## if metric_3p9 is provided
 
-  df <-
+  cur_yr_df <-
     full_join(
       df,
       df_3p9 %>% select(yr_num, mth_num_in_yr, !!metric_3p9),
@@ -173,10 +196,8 @@ if(!missing(metric_3p9)){ ## if metric_3p9 is provided
 ###### previous year variance calculation ######
 
 final <- right_join(
-  df %>% filter(yr_num == cur_yr) %>% ungroup()
-  # %>% select(mth_num_in_yr, !!metric, type)
-  , # isolate current year's data
-  df %>% filter(yr_num == prev_yr) %>% ungroup() %>% select(mth_num_in_yr, !!metric), # isolate last year's data
+  cur_yr_df %>% ungroup(),
+  prev_yr_df %>% ungroup(), # isolate last year's data
   by = "mth_num_in_yr",
   suffix = c("_cur_yr", "_prev_yr")) %>%
   # mutate_at(vars(UQ(metric_cur_yr_name), UQ(metric_prev_yr_name)), funs(div_by_one_thousand(.))) %>%
