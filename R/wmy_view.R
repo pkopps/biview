@@ -1,6 +1,6 @@
-#magic
+#wmy_view
 
-magic <- function(df,
+wmy_view <- function(df,
                   metric,
                   df_op2,
                   metric_op2,
@@ -55,7 +55,7 @@ if(missing(metric_op2)){
     ret <- right_join(week_res, month_res, by = 'metric') %>%
       left_join(year_res_actual, by = 'metric') %>%
       left_join(year_res_rr, by = 'metric') %>%
-      mutate_all(funs(replace(., is.na(.), "n/a")))
+      mutate_all(funs(replace(., is.na(.), "")))
 
   }
 
@@ -104,7 +104,7 @@ else if(!missing(metric_op2)){
   right_join(week_res, month_res, by = 'metric') %>% # right join because week_res does not have op2 data
     left_join(year_res_actual, by = 'metric') %>%
     left_join(year_res_rr, by = 'metric') %>%
-    mutate_all(funs(replace(., is.na(.), "n/a")))
+    mutate_all(funs(replace(., is.na(.), "")))
 
 }
 

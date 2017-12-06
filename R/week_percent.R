@@ -2,7 +2,9 @@
 
 week_percent_view <- function(
   df,
+  df_numerator,
   numerator,
+  df_denominator,
   denominator,
   show_type = FALSE,
   num_wks_to_show = 4,

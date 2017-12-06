@@ -1,6 +1,6 @@
-# magic percent
+# wmy_view percent
 
-magic_percent <- function(df,
+wmy_view_percent <- function(df,
                   numerator,
                   denominator,
                   # df_op2,
