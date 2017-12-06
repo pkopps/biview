@@ -1,6 +1,6 @@
-#month_year_view
+#my_view
 
-month_year_view <- function(df,
+my_view <- function(df,
                   metric,
                   df_op2,
                   metric_op2,
@@ -66,13 +66,13 @@ else if(!missing(metric_op2)){
   metric <- enquo(metric)
   metric_op2 <- enquo(metric_op2)
 
-  week_view(
-    df = df,
-    metric = !!metric,
-    show_type = show_type,
-    num_wks_to_show = num_wks_to_show,
-    new_name = new_name
-  ) -> week_res
+  # week_view(
+  #   df = df,
+  #   metric = !!metric,
+  #   show_type = show_type,
+  #   num_wks_to_show = num_wks_to_show,
+  #   new_name = new_name
+  # ) -> week_res
 
   month_view(
     df = df,
