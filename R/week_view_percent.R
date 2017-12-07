@@ -8,7 +8,9 @@ week_percent_view <- function(
   denominator,
   show_type = FALSE,
   num_wks_to_show = 4,
-  new_name = NULL
+  new_name = NULL,
+  prefix = "",
+  suffix = ""
   # ,
   # sparkline = FALSE
 ) {
@@ -67,6 +69,16 @@ week_percent_view <- function(
       ) %>%
     mutate(rate_prev_yr_var = round( (rate_cur_yr - rate_prev_yr) , 2) ) ## "3 ppts"
 
+  print(suffix)
+
+  prev_yr_var_df <- prev_yr_var_df %>%
+    mutate(wk_num_in_yr = paste0("w", wk_num_in_yr),
+           rate_cur_yr = paste0(prefix, rate_cur_yr, suffix),
+           rate_prev_yr = paste0(prefix, rate_prev_yr, suffix)
+           # ,
+           # rate_prev_yr_var = paste0(prefix, rate_prev_yr_var, suffix)
+           )
+
   if(!missing(new_name)){
 
     prev_yr_var_df <- prev_yr_var_df %>% rename(!!new_name := rate_cur_yr,
@@ -74,9 +86,6 @@ week_percent_view <- function(
                                                 `Variance vs. Prior Year` = rate_prev_yr_var)
 
   }
-
-  prev_yr_var_df <- prev_yr_var_df %>%
-    mutate(wk_num_in_yr = paste0("w", wk_num_in_yr))
 
   final <- prev_yr_var_df %>%
     gather(metric, value, -wk_num_in_yr) %>%

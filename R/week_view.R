@@ -1,5 +1,18 @@
 #week view
 
+#' Transform regular data into the week view for BI view
+#'
+#' @param df A data frame with date dimensions
+#' @param metric Column to be group and summate on
+#' @param show_type Add row to output to indicate actual or run rate
+#' @param num_wks_to_show Defaults to 4. Change to show more than 4 weeks
+#' @param new_name Clean up nomenclature for metric column
+#'
+#' @return transformed data frame
+#' @examples
+#'
+#'
+
 week_view <- function(
   df,
   metric,
@@ -14,6 +27,15 @@ week_view <- function(
 
   if(missing(df)){ stop("'df' argument is mandatory") }
   if(missing(metric)){ stop("'metric' argument is mandatory") }
+
+  required_cols <- list(
+    'yr_num',
+    'mth_num_in_yr',
+    'wk_num_in_yr'
+  )
+
+  if(any(!(required_cols %in% names(df)))){ stop("'df' argument missing required time dimension column(s):
+                                                 must have 'yr_num', 'mth_num_in_yr', and 'wk_num_in_yr'") }
 
 ###
 

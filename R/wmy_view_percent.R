@@ -8,7 +8,9 @@ wmy_view_percent <- function(df,
                   run_rate = TRUE,
                   show_type = FALSE,
                   num_wks_to_show = 4,
-                  new_name
+                  new_name,
+                  prefix = "",
+                  suffix = ""
 ){
 
   numerator <- enquo(numerator)
@@ -25,7 +27,9 @@ wmy_view_percent <- function(df,
     denominator = !!denominator,
     show_type = show_type,
     num_wks_to_show = num_wks_to_show,
-    new_name = new_name
+    new_name = new_name,
+    prefix = prefix,
+    suffix = suffix
   ) -> week_res
 
   month_percent(
