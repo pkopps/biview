@@ -19,4 +19,4 @@ wk_view_place_hold <- function(metric, num_wks_to_show = 4){
 
 }
 
-wk_view_place_hold("Patrick")
+wk_view_place_hold("#rd Party Marketing Spend")
