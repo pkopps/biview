@@ -18,7 +18,8 @@ week_view <- function(
   metric,
   show_type = FALSE,
   num_wks_to_show = 4,
-  new_name = NULL
+  new_name = NULL,
+  suffix = ""
   # ,
   # sparkline = FALSE
 ) {
@@ -34,7 +35,7 @@ week_view <- function(
     'wk_num_in_yr'
   )
 
-  if(any(!(required_cols %in% names(df)))){ stop("'df' argument missing required time dimension column(s): must have 'yr_num', 'mth_num_in_yr', and 'wk_num_in_yr'") }
+  # if(any(!(required_cols %in% names(df)))){ stop("'df' argument missing required time dimension column(s): must have 'yr_num', 'mth_num_in_yr', and 'wk_num_in_yr'") }
 
 ###
 
@@ -116,6 +117,11 @@ week_view <- function(
 
   # }
 
+  prev_yr_var_df <- prev_yr_var_df %>%
+    mutate(wk_num_in_yr = paste0("w", wk_num_in_yr),
+           !!metric_cur_yr_name := paste0(!!metric_cur_yr_name, suffix),
+           !!metric_prev_yr_name := paste0(!!metric_prev_yr_name, suffix))
+
   if(!missing(new_name)){
 
     prev_yr_var_df <- prev_yr_var_df %>% rename(!!new_name := UQ(metric_cur_yr_name),
@@ -124,8 +130,7 @@ week_view <- function(
 
   }
 
-  prev_yr_var_df <- prev_yr_var_df %>%
-    mutate(wk_num_in_yr = paste0("w", wk_num_in_yr))
+
 
   final <- prev_yr_var_df %>%
     gather(metric, value, -wk_num_in_yr) %>%
