@@ -2,9 +2,7 @@
 
 week_percent_view <- function(
   df,
-  df_numerator,
   numerator,
-  df_denominator,
   denominator,
   show_type = FALSE,
   num_wks_to_show = 4,
@@ -42,23 +40,23 @@ week_percent_view <- function(
                         "rate_prev_yr_var")
   }
 
-  cur_yr_df <- df %>% filter(yr_num == cur_yr) %>%
-    group_by(yr_num, wk_num_in_yr) %>%
-    summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
-    mutate(
-      rate = round(100 * ( (UQ(numerator)) / (UQ(denominator)) ), 2),
-      type = "actual") %>%
-    filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
-    ungroup()
+    cur_yr_df <- df %>% filter(yr_num == cur_yr) %>%
+      group_by(yr_num, wk_num_in_yr) %>%
+      summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
+      mutate(
+        rate = round(100 * ( (UQ(numerator)) / (UQ(denominator)) ), 2),
+        type = "actual") %>%
+      filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
+      ungroup()
 
-  prev_yr_df <- df %>% filter(yr_num == prev_yr) %>%
-    group_by(yr_num, wk_num_in_yr) %>%
-    summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
-    mutate(
-      rate = round(100 * ( (UQ(numerator)) / (UQ(denominator)) ), 2),
-      type = "actual") %>%
-    filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
-    ungroup()
+    prev_yr_df <- df %>% filter(yr_num == prev_yr) %>%
+      group_by(yr_num, wk_num_in_yr) %>%
+      summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
+      mutate(
+        rate = round(100 * ( (UQ(numerator)) / (UQ(denominator)) ), 2),
+        type = "actual") %>%
+      filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
+      ungroup()
 
   prev_yr_var_df <-
     right_join(
@@ -68,8 +66,6 @@ week_percent_view <- function(
       suffix = c("_cur_yr","_prev_yr")
       ) %>%
     mutate(rate_prev_yr_var = round( (rate_cur_yr - rate_prev_yr) , 2) ) ## "3 ppts"
-
-  print(suffix)
 
   prev_yr_var_df <- prev_yr_var_df %>%
     mutate(wk_num_in_yr = paste0("w", wk_num_in_yr),
