@@ -34,8 +34,7 @@ week_view <- function(
     'wk_num_in_yr'
   )
 
-  if(any(!(required_cols %in% names(df)))){ stop("'df' argument missing required time dimension column(s):
-                                                 must have 'yr_num', 'mth_num_in_yr', and 'wk_num_in_yr'") }
+  if(any(!(required_cols %in% names(df)))){ stop("'df' argument missing required time dimension column(s): must have 'yr_num', 'mth_num_in_yr', and 'wk_num_in_yr'") }
 
 ###
 

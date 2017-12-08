@@ -63,8 +63,7 @@ wmy_view_percent <- function(df,
 
   right_join(week_res, month_res, by = 'metric') %>%
     left_join(year_res_actual, by = 'metric') %>%
-    left_join(year_res_rr, by = 'metric') %>%
-    mutate_all(funs(replace(., is.na(.), "")))
+    left_join(year_res_rr, by = 'metric')
 
   # left_join(week_res, year_res_actual, by = 'metric') %>% left_join(year_res_rr, by = 'metric')
 

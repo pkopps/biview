@@ -53,10 +53,11 @@ perc_of_total_wmy_view <- function(
     #   run_rate = run_rate
     # ) -> year_res_rr
 
-    ret <- right_join(week_res, month_res, by = 'metric') %>%
+    ret <- right_join(week_res, month_res, by = 'metric')
+    # %>%
       # left_join(year_res_actual, by = 'metric') %>%
       # left_join(year_res_rr, by = 'metric') %>%
-      mutate_all(funs(replace(., is.na(.), "")))
+      # mutate_all(funs(replace(., is.na(.), "")))
 
   }
 
@@ -101,10 +102,11 @@ perc_of_total_wmy_view <- function(
     #   run_rate = run_rate
     # ) -> year_res_rr
 
-    right_join(week_res, month_res, by = 'metric') %>% # right join because week_res does not have op2 data
+    right_join(week_res, month_res, by = 'metric')
+    # %>% # right join because week_res does not have op2 data
       # left_join(year_res_actual, by = 'metric') %>%
       # left_join(year_res_rr, by = 'metric') %>%
-      mutate_all(funs(replace(., is.na(.), "")))
+      # mutate_all(funs(replace(., is.na(.), "")))
 
   }
 

@@ -71,7 +71,7 @@ perc_of_total_wk_view <- function(
     mutate(perc_total = round(100 * (UQ(metric) / sum(UQ(metric))), 2)) %>%
     mutate(type = "actual") %>%
     filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
-    filter(UQE(group_col) == filter_val) %>%
+    filter(UQ(group_col) == filter_val) %>%
     ungroup()
 
   prev_yr_df <- df %>%
@@ -81,7 +81,7 @@ perc_of_total_wk_view <- function(
     mutate(perc_total = round(100 * (UQ(metric) / sum(UQ(metric))), 2)) %>%
     mutate(type = "actual") %>%
     filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
-    filter(UQE(group_col) == filter_val) %>% ### UQE not UQ #######
+    filter(UQ(group_col) == filter_val) %>%
     ungroup()
 
   prev_yr_var_df <-
