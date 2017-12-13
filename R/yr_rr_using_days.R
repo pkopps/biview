@@ -1,12 +1,14 @@
-# year run rate
+# year run rate using days
 
-year_run_rate <- function(
+yr_rr_using_days <- function(
   df,
   metric
 ){
 
   if(missing(df)){ stop("'df' argument is mandatory") }
   if(missing(metric)){ stop("'metric' argument is mandatory") }
+
+  if(!('date_value' %in% names(df))){ stop("df must contain column 'date_value' to use this function") }
 
   metric <- enquo(metric)
   metric_name <- quo_name(metric)

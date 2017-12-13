@@ -1,6 +1,6 @@
 # year run rate using months
 
-year_run_rate_using_months <- function(
+yr_rr_using_mths <- function(
   df,
   metric
 ){
@@ -19,7 +19,7 @@ year_run_rate_using_months <- function(
   # cur_mth <- max(df$mth_num_in_yr)
   cur_mth <- df %>% filter(yr_num == cur_yr) %>% summarise(max(mth_num_in_yr)) %>% pull()
   prev_mth <- cur_mth - 1
-  today <- max(df$date_value)
+  # today <- max(df$date_value)
   today_prev_mth <- today - 30
   today_prev_yr <- today - 365
 
@@ -37,19 +37,14 @@ year_run_rate_using_months <- function(
     mth_num_in_yr <= cur_mth
   )
 
-  rbind(prev_yr_actuals_df, cur_yr_actuals_df) %>%
-    # mutate(yr_num = max(yr_num)) %>%
-    group_by(yr_num) %>%
-    summarise_at(vars(!!metric), funs(round_sum)) %>%
-    rename(!!metric_cur_yr_name := !!metric) %>%
-    mutate(type = "run_rate") %>% print()
-
   final <- rbind(prev_yr_actuals_df, cur_yr_actuals_df) %>%
     mutate(yr_num = max(yr_num)) %>%
     group_by(yr_num) %>%
     summarise_at(vars(!!metric), funs(round_sum)) %>%
     rename(!!metric_cur_yr_name := !!metric) %>%
-    mutate(type = "run_rate")
+    mutate(type = "run_rate") %>%
+    ungroup() %>%
+    select(-yr_num)
 
   final
 

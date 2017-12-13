@@ -19,11 +19,12 @@ wmy_view <- function(
   metric,
   df_op2,
   metric_op2,
-  run_rate = TRUE,
+  mth_rr = TRUE,
+  yr_rr = TRUE,
   show_type = FALSE,
   num_wks_to_show = 4,
   new_name
-                  ){
+){
 
 if(missing(metric_op2)){
 
@@ -38,33 +39,34 @@ if(missing(metric_op2)){
       new_name = new_name
     ) -> week_res
 
-    month_view(
+    mth_view(
       df = df,
       metric = !!metric,
       # df_op2 = df_op2,
       # metric_op2 = !!metric_op2,
-      run_rate = run_rate, show_type = show_type,
+      mth_rr = mth_rr,
+      show_type = show_type,
       new_name = new_name
     ) -> month_res
 
-    year_view(
+    yr_view(
       df = df,
       metric = !!metric,
       # df_op2 = df_op2,
       # metric_op2 = !!metric_op2,
       show_type = show_type,
       new_name = new_name,
-      run_rate = FALSE
+      yr_rr = FALSE
     ) -> year_res_actual
 
-    year_view(
+    yr_view(
       df = df,
       metric = !!metric,
       # df_op2 = df_op2,
       # metric_op2 = !!metric_op2,
       show_type = show_type,
       new_name = new_name,
-      run_rate = run_rate
+      yr_rr = yr_rr
     ) -> year_res_rr
 
     right_join(week_res, month_res, by = 'metric') %>% # right join because week_res does not have op2 data
@@ -86,33 +88,34 @@ else if(!missing(metric_op2)){
     new_name = new_name
   ) -> week_res
 
-  month_view(
+  mth_view(
     df = df,
     metric = !!metric,
     df_op2 = df_op2,
     metric_op2 = !!metric_op2,
-    run_rate = run_rate, show_type = show_type,
+    mth_rr = mth_rr,
+    show_type = show_type,
     new_name = new_name
   ) -> month_res
 
-  year_view(
+  yr_view(
     df = df,
     metric = !!metric,
     df_op2 = df_op2,
     metric_op2 = !!metric_op2,
     show_type = show_type,
     new_name = new_name,
-    run_rate = FALSE
+    yr_rr = FALSE
   ) -> year_res_actual
 
-  year_view(
+  yr_view(
     df = df,
     metric = !!metric,
     df_op2 = df_op2,
     metric_op2 = !!metric_op2,
     show_type = show_type,
     new_name = new_name,
-    run_rate = run_rate
+    yr_rr = yr_rr
   ) -> year_res_rr
 
   right_join(week_res, month_res, by = 'metric') %>% # right join because week_res does not have op2 data

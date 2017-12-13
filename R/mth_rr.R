@@ -1,6 +1,6 @@
 # month run rate
 
-month_run_rate <- function(
+mth_rr <- function(
   df,
   metric
 ){

@@ -1,11 +1,11 @@
 # place holder wk_view
 
-wk_view_place_hold <- function(metric, num_wks_to_show = 4){
+wk_view_place_hold <- function(metric_name, num_wks_to_show = 4){
 
-  wk_num_in_yr <- paste0("W", c((prev_wk - (num_wks_to_show - 1)):prev_wk))
+  wk_num_in_yr <- paste0("w", c((prev_wk - (num_wks_to_show - 1)):prev_wk))
 
   tibble(
-    'metric' = c(metric, "Prior Year", "Variance vs. Prior Year", "OP2 Plan", "Variance vs. Plan")
+    'metric' = c(metric_name, "Prior Year", "Variance vs. Prior Year", "OP2 Plan", "Variance vs. Plan")
   ) -> l
 
   t <- tibble(
@@ -18,5 +18,3 @@ wk_view_place_hold <- function(metric, num_wks_to_show = 4){
   bind_cols(l, r)
 
 }
-
-wk_view_place_hold("#rd Party Marketing Spend")

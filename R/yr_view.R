@@ -1,13 +1,13 @@
 #year_view
 
-year_view <- function(
+yr_view <- function(
   df,
   metric,
   df_op2,
   metric_op2,
   show_type = FALSE,
   new_name = NULL,
-  run_rate = TRUE
+  yr_rr = TRUE
   # ,
   # funct = sum
   # ,
@@ -16,7 +16,7 @@ year_view <- function(
 
   ###### message to clarify ACTUAL vs RUN RATE ######
 
-  if(run_rate == FALSE){
+  if(yr_rr == FALSE){
     message(glue("Year {cur_yr} (current year) value is ACTUAL"))
   }
   else{
@@ -107,13 +107,15 @@ if(!missing(metric_op2)){
 
   ###### opt in to replace actual measures for run rate here ######
 
-  if(run_rate == TRUE){
-
-    rr <- year_run_rate(df = df, metric = !!metric)
-
+  if(yr_rr == TRUE){
+    rr <- yr_rr_using_days(df = df, metric = !!metric)
     cur_yr_df <- rr
-
   }
+
+  # if(yr_rr == "monthly"){
+  #   rr <- yr_rr_using_mths(df = df, metric = !!metric)
+  #   cur_yr_df <- rr
+  # }
 
   ###
 
@@ -183,7 +185,7 @@ if(!missing(metric_op2)){
 
   }
 
-  if(run_rate == FALSE){
+  if(yr_rr == FALSE){
     final <-
       final %>%
       gather(metric, value) %>%

@@ -1,6 +1,6 @@
 # month
 
-month_view <- function(
+mth_view <- function(
   df,
   metric,
   df_op2,
@@ -11,14 +11,14 @@ month_view <- function(
   metric_6p6,
   df_9p3,
   metric_9p3,
-  run_rate = TRUE,
+  mth_rr = TRUE,
   show_type = FALSE,
   new_name = NULL
 ) {
 
 ###### message to clarify ACTUAL vs RUN RATE ######
 
-  if(run_rate == FALSE) message(glue("Month {cur_mth} (current month) value is ACTUAL")) else message(glue("Month {cur_mth} (current month) value is RUN RATE"))
+  if(mth_rr == FALSE) message(glue("Month {cur_mth} (current month) value is ACTUAL")) else message(glue("Month {cur_mth} (current month) value is RUN RATE"))
 
 ###
 
@@ -45,9 +45,9 @@ month_view <- function(
   metric_name <- quo_name(metric)
 
   metric_cur_yr_name <- as.name(paste(metric_name, "cur_yr", sep = "_"))
-  # metric_cur_yr <- enquo(metric_cur_yr_var_name)
+  metric_cur_yr <- enquo(metric_cur_yr_name)
   metric_prev_yr_name <- as.name(paste(metric_name, "prev_yr", sep = "_"))
-  # metric_prev_yr <- enquo(metric_prev_yr_var_name)
+  # metric_prev_yr <- enquo(metric_prev_yr_name)
 
   metric_prev_yr_var_name <- paste(metric_name, "prev_yr_var", sep = "_")
   metric_prev_yr_var <- enquo(metric_prev_yr_var_name)
@@ -67,7 +67,21 @@ if(!missing(metric_3p9)){
     metric_3p9 <- enquo(metric_3p9)
     metric_3p9_name <- quo_name(metric_3p9)
 
-  }
+}
+
+if(!missing(metric_6p6)){
+
+  metric_6p6 <- enquo(metric_6p6)
+  metric_6p6_name <- quo_name(metric_6p6)
+
+}
+
+if(!missing(metric_9p3)){
+
+  metric_9p3 <- enquo(metric_9p3)
+  metric_9p3_name <- quo_name(metric_9p3)
+
+}
 
 ###### define order of metrics for output ######
 
@@ -109,9 +123,9 @@ if(!missing(metric_3p9)){
 
 ###### opt in to replace actual measures for run rate here ######
 
-if(run_rate == TRUE){
+if(mth_rr == TRUE){
 
-  rr <- month_run_rate(df = df, metric = !!metric)
+  rr <- mth_rr(df = df, metric = !!metric)
 
   df <- df %>%
     group_by(yr_num, mth_num_in_yr) %>% # group by year and month
@@ -153,6 +167,8 @@ if(run_rate == TRUE){
 
 ###
 
+
+
 ###### opt in to add op2 view ######
 
 if(!missing(metric_op2)){
@@ -165,9 +181,7 @@ if(!missing(metric_op2)){
       ) %>%
     mutate(
       !!metric_op2_var_name := round(
-      100 * ( (UQ(metric_cur_yr_name)) - (!!metric_op2)
-                # (UQ(metric_op2_name))
-              ) # numerator
+      100 * ( (UQ(metric_cur_yr_name)) - (!!metric_op2) )
       /
       (UQ(metric_cur_yr_name)), # denominator
       2)
@@ -183,9 +197,9 @@ if(!missing(metric_3p9)){ ## if metric_3p9 is provided
 
   cur_yr_df <-
     full_join(
-      df,
-      df_3p9 %>% select(yr_num, mth_num_in_yr, !!metric_3p9),
-      by = c("yr_num", "mth_num_in_yr")
+      cur_yr_df,
+      df_3p9 %>% select(mth_num_in_yr, !!metric_3p9),
+      by = c("mth_num_in_yr")
       ) %>%
     ungroup()
 
@@ -193,9 +207,27 @@ if(!missing(metric_3p9)){ ## if metric_3p9 is provided
 
 ###
 
+###### handle 9+3, 6+6, 3+9, OP2 in current year row ######
+
+if(!missing(metric_9p3)){
+  cur_yr_df <- cur_yr_df %>%
+    mutate(if_else(is.na(!!metric_cur_yr), !!metric_9p3, !!metric_cur_yr)) %>%
+    select(-!!metric_9p3)
+}else if(!missing(metric_6p6)){
+  cur_yr_df <- cur_yr_df %>%
+    mutate(if_else(is.na(!!metric_cur_yr), !!metric_6p6, !!metric_cur_yr)) %>%
+    select(-!!metric_6p6)
+}else if(!missing(metric_3p9)){
+  cur_yr_df <- cur_yr_df %>%
+    mutate(!!metric_cur_yr_name := if_else(is.na(!!metric_cur_yr), !!metric_3p9, !!metric_cur_yr)) %>%
+    select(-!!metric_3p9)
+}else if(!missing(metric_op2)){
+  cur_yr_df <- cur_yr_df %>% mutate(!!metric_cur_yr_name := if_else(is.na(!!metric_cur_yr), !!metric_op2, !!metric_cur_yr))
+}
+
 ###### previous year variance calculation ######
 
-prev_yr_var_df <- right_join(
+final <- right_join(
   cur_yr_df %>% ungroup(),
   prev_yr_df %>% ungroup(), # isolate last year's data
   by = "mth_num_in_yr",
@@ -205,23 +237,10 @@ prev_yr_var_df <- right_join(
   mutate(
     !!metric_prev_yr_var_name :=
       round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
-      /
-      (UQ(metric_prev_yr_name)), 2 )
-    ) %>%
+             /
+               (UQ(metric_prev_yr_name)), 2 )
+  ) %>%
   ungroup()
-
-###
-
-###### 3 + 9 ######
-
-if(!missing(metric_3p9)){
-
-prev_yr_var_df <- left_join(
-  prev_yr_var_df,
-  df_3p9 %>% select(mth_num_in_yr, !!metric_3p9),
-  by = "mth_num_in_yr")
-
-}
 
 ###
 
@@ -229,7 +248,7 @@ prev_yr_var_df <- left_join(
 
 if(!missing(new_name) & missing(metric_op2)){
 
-  final <- prev_yr_var_df %>%
+  final <- final %>%
     rename(!!new_name := UQ(metric_cur_yr_name),
           `Prior Year` = UQ(metric_prev_yr_name),
           `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name)) %>%
@@ -238,7 +257,7 @@ if(!missing(new_name) & missing(metric_op2)){
 
 }else if(!missing(new_name) & !missing(metric_op2)){
 
-  final <- prev_yr_var_df %>%
+  final <- final %>%
     rename(!!new_name := UQ(metric_cur_yr_name),
           `Prior Year` = UQ(metric_prev_yr_name),
           `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name),
