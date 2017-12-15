@@ -1,14 +1,14 @@
 # year view rate
 
-# week view rate
-
-year_view_rate <- function(
+yr_rate <- function(
   df,
   numerator,
   denominator,
   show_type = FALSE,
   run_rate = TRUE,
-  new_name = NULL
+  new_name = NULL,
+  scaler = 1,
+  round = 2
   # ,
   # sparkline = FALSE
 ) {
@@ -44,10 +44,12 @@ year_view_rate <- function(
     group_by(yr_num) %>%
     summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
     mutate(
-      rate_cur_yr = round(100 * ( (UQ(numerator)) / (UQ(denominator)) ), 2),
+      rate_cur_yr = round(scaler * ( (UQ(numerator)) / (UQ(denominator)) ), round),
       type = "actual") %>%
     ungroup() %>%
     select(rate_cur_yr, type)
+
+  print(cur_yr_df)
 
   ###### opt in to replace actual measures for run rate here ######
 
@@ -63,7 +65,7 @@ year_view_rate <- function(
     group_by(yr_num) %>%
     summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
     mutate(
-      rate_prev_yr = round(100 * ( (UQ(numerator)) / (UQ(denominator)) ), 2),
+      rate_prev_yr = round(scaler * ( (UQ(numerator)) / (UQ(denominator)) ), round),
       type = "actual") %>%
     ungroup() %>%
     select(rate_prev_yr)

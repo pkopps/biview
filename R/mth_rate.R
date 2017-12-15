@@ -1,6 +1,6 @@
 # month percent
 
-month_percent <- function(
+mth_rate <- function(
   df,
   numerator,
   denominator,
@@ -8,7 +8,11 @@ month_percent <- function(
   metric_op2,
   run_rate = FALSE,
   show_type = FALSE,
-  new_name = NULL
+  new_name = NULL,
+  round = 2,
+  scaler = 1,
+  prefix = "",
+  suffix = ""
   # ,
   # op2 = FALSE
 ) {
@@ -52,7 +56,7 @@ month_percent <- function(
     group_by(yr_num, mth_num_in_yr) %>%
     summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
     mutate(
-      rate_cur_yr = round( 100 * ( UQ(numerator) / UQ(denominator) ), 2),
+      rate = round(scaler * ( UQ(numerator) / UQ(denominator) ), round),
       type = "actual") %>%
     ungroup() %>%
     select(-yr_num, -!!numerator, -!!denominator)
@@ -71,20 +75,31 @@ month_percent <- function(
     group_by(yr_num, mth_num_in_yr) %>%
     summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
     mutate(
-      rate_prev_yr = round( 100 * ( UQ(numerator) / UQ(denominator) ), 2),
+      rate = round(scaler * ( UQ(numerator) / UQ(denominator) ), round),
       type = "actual") %>%
     ungroup() %>%
-    select(rate_prev_yr)
+    select(mth_num_in_yr, rate)
 
-  final <-
-    cbind(cur_yr_df, prev_yr_df) %>%
+  prev_yr_var_df <-
+    right_join(
+      cur_yr_df %>% select(mth_num_in_yr, rate, type),
+      prev_yr_df %>% select(mth_num_in_yr, rate),
+      by = c("mth_num_in_yr" = "mth_num_in_yr"),
+      suffix = c("_cur_yr","_prev_yr")
+    ) %>%
     mutate(rate_prev_yr_var = round( (rate_cur_yr - rate_prev_yr) , 2) )
+
+  prev_yr_var_df <-
+    prev_yr_var_df %>% mutate(
+      rate_cur_yr = paste0(prefix, rate_cur_yr, suffix),
+      rate_prev_yr = paste0(prefix, rate_prev_yr, suffix)
+    )
 
   ###### Change names of OP2 columns if OP2 arguments are provided ######
 
   if(!missing(new_name) & missing(metric_op2)){
 
-    final <- final %>%
+    final <- prev_yr_var_df %>%
       rename(
         !!new_name := rate_cur_yr,
         `Prior Year` = rate_prev_yr,
@@ -97,7 +112,7 @@ month_percent <- function(
 
   }else if(!missing(new_name) & !missing(metric_op2)){
 
-    final <- final %>%
+    final <- prev_yr_var_df %>%
       rename(
         !!new_name := UQ(rate_cur_yr),
         `Prior Year` = UQ(rate_prev_yr),
@@ -107,6 +122,8 @@ month_percent <- function(
       )
 
   }
+
+  ###
 
   ###
 

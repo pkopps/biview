@@ -1,12 +1,14 @@
-# week percent
+# week view rate
 
-week_percent_view <- function(
+wk_rate <- function(
   df,
   numerator,
   denominator,
   show_type = FALSE,
   num_wks_to_show = 4,
   new_name = NULL,
+  scaler = 1,
+  round = 2,
   prefix = "",
   suffix = ""
   # ,
@@ -44,7 +46,7 @@ week_percent_view <- function(
       group_by(yr_num, wk_num_in_yr) %>%
       summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
       mutate(
-        rate = round(100 * ( (UQ(numerator)) / (UQ(denominator)) ), 2),
+        rate = round(scaler * ( (UQ(numerator)) / (UQ(denominator)) ), round),
         type = "actual") %>%
       filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
       ungroup()
@@ -53,7 +55,7 @@ week_percent_view <- function(
       group_by(yr_num, wk_num_in_yr) %>%
       summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
       mutate(
-        rate = round(100 * ( (UQ(numerator)) / (UQ(denominator)) ), 2),
+        rate = round(scaler * ( (UQ(numerator)) / (UQ(denominator)) ), round),
         type = "actual") %>%
       filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
       ungroup()

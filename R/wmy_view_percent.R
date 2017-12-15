@@ -22,7 +22,7 @@ wmy_view_percent <- function(df,
   # numerator_op2 <- enquo(numerator_op2)
   # denominator_op2 <- enquo(denominator_op2)
 
-  week_percent_view(
+  wk_rate(
     df = df,
     numerator = !!numerator,
     denominator = !!denominator,
@@ -34,7 +34,7 @@ wmy_view_percent <- function(df,
     suffix = suffix
   ) -> week_res
 
-  month_percent(
+  mth_rate(
     df = df,
     numerator = !!numerator,
     denominator = !!denominator,
@@ -43,7 +43,7 @@ wmy_view_percent <- function(df,
     new_name = new_name
   ) -> month_res
 
-  year_view_rate(
+  yr_rate(
     df = df,
     numerator = !!numerator,
     denominator = !!denominator,
@@ -52,7 +52,7 @@ wmy_view_percent <- function(df,
     new_name = new_name
   ) -> year_res_actual
 
-  year_view_rate(
+  yr_rate(
     df = df,
     numerator = !!numerator,
     denominator = !!denominator,
