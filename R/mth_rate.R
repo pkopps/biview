@@ -9,10 +9,10 @@ mth_rate <- function(
   run_rate = FALSE,
   show_type = FALSE,
   new_name = NULL,
-  round = 2,
-  scaler = 1,
   prefix = "",
-  suffix = ""
+  suffix = "",
+  round = 2,
+  scaler = 1
   # ,
   # op2 = FALSE
 ) {

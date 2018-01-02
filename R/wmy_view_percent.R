@@ -11,7 +11,8 @@ wmy_view_percent <- function(df,
                   num_wks_to_show = 4,
                   new_name,
                   prefix = "",
-                  suffix = ""
+                  suffix = "",
+                  scaler = 1
 ){
 
   numerator <- enquo(numerator)
@@ -31,7 +32,8 @@ wmy_view_percent <- function(df,
     num_wks_to_show = num_wks_to_show,
     new_name = new_name,
     prefix = prefix,
-    suffix = suffix
+    suffix = suffix,
+    scaler = scaler
   ) -> week_res
 
   mth_rate(
@@ -40,7 +42,10 @@ wmy_view_percent <- function(df,
     denominator = !!denominator,
     show_type = show_type,
     run_rate = FALSE,
-    new_name = new_name
+    new_name = new_name,
+    prefix = prefix,
+    suffix = suffix,
+    scaler = scaler
   ) -> month_res
 
   yr_rate(
@@ -49,7 +54,10 @@ wmy_view_percent <- function(df,
     denominator = !!denominator,
     show_type = show_type,
     run_rate = FALSE,
-    new_name = new_name
+    new_name = new_name,
+    prefix = prefix,
+    suffix = suffix,
+    scaler = scaler
   ) -> year_res_actual
 
   yr_rate(
@@ -58,7 +66,10 @@ wmy_view_percent <- function(df,
     denominator = !!denominator,
     show_type = show_type,
     run_rate = run_rate,
-    new_name = new_name
+    new_name = new_name,
+    prefix = prefix,
+    suffix = suffix,
+    scaler = scaler
   ) -> year_res_rr
 
   right_join(week_res, month_res, by = 'metric') %>%

@@ -18,8 +18,11 @@ prev_mth <- cur_mth - 1
 today <- max(df$date_value)
 today_prev_mth <- today - 30
 
-df <- df %>% filter(yr_num == cur_yr,
-                    mth_num_in_yr %in% c(cur_mth, prev_mth))
+df <- df %>%
+  filter(
+    yr_num == cur_yr,
+    mth_num_in_yr %in% c(cur_mth, prev_mth)
+  )
 
 prev_mth_actuals_df <- df %>% filter(
   mth_num_in_yr == prev_mth,

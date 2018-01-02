@@ -7,6 +7,8 @@ yr_rate <- function(
   show_type = FALSE,
   run_rate = TRUE,
   new_name = NULL,
+  prefix = "",
+  suffix = "",
   scaler = 1,
   round = 2
   # ,
@@ -49,8 +51,6 @@ yr_rate <- function(
     ungroup() %>%
     select(rate_cur_yr, type)
 
-  print(cur_yr_df)
-
   ###### opt in to replace actual measures for run rate here ######
 
   if(run_rate == TRUE){
@@ -72,7 +72,15 @@ yr_rate <- function(
 
   prev_yr_var_df <-
     cbind(cur_yr_df, prev_yr_df) %>%
-    mutate(rate_prev_yr_var = round( (rate_cur_yr - rate_prev_yr) , 2) )
+    mutate(rate_prev_yr_var = round( (rate_cur_yr - rate_prev_yr) , 2) ) ## "3 ppts"
+
+  ### handle prefix suffix ###
+
+  prev_yr_var_df <-
+    prev_yr_var_df %>% mutate(
+      rate_cur_yr = paste0(prefix, rate_cur_yr, suffix),
+      rate_prev_yr = paste0(prefix, rate_prev_yr, suffix)
+    )
 
   if(!missing(new_name)){
 

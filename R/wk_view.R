@@ -19,7 +19,9 @@ week_view <- function(
   show_type = FALSE,
   num_wks_to_show = 4,
   new_name = NULL,
-  suffix = ""
+  suffix = "",
+  div_by_one_thousand = TRUE,
+  accounting = TRUE
   # ,
   # sparkline = FALSE
 ) {
@@ -36,6 +38,18 @@ week_view <- function(
   )
 
   # if(any(!(required_cols %in% names(df)))){ stop("'df' argument missing required time dimension column(s): must have 'yr_num', 'mth_num_in_yr', and 'wk_num_in_yr'") }
+
+###
+
+###
+
+cur_yr <- max(df$yr_num)
+prev_yr <- cur_yr - 1
+# cur_mth <- max(df$mth_num_in_yr)
+cur_mth <- df %>% filter(yr_num == cur_yr) %>% summarise(max(mth_num_in_yr)) %>% pull()
+prev_mth <- cur_mth - 1
+today <- max(df$date_value)
+today_prev_mth <- today - 30
 
 ###
 
@@ -72,13 +86,17 @@ week_view <- function(
 
   cur_yr_df <- df %>% filter(yr_num == cur_yr) %>%
     group_by(yr_num, wk_num_in_yr
-             # , wk_start_date
              ) %>%
     summarise_at(vars(!!metric), funs(round_sum)) %>%
     # summarise_at(vars(!!metric), funs(sum)) %>%
-    mutate(type = "actual") %>%
+    mutate(
+      type = "actual",
+      pop = round( 100 * ( ( (!!metric) - lag(!!metric) ) / lag(!!metric) ), 2 )
+      ) %>%
     filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
     ungroup()
+
+  # print(cur_yr_df)
 
   prev_yr_df <- df %>% filter(yr_num == prev_yr) %>%
     group_by(yr_num, wk_num_in_yr) %>%
@@ -88,22 +106,44 @@ week_view <- function(
     filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
     ungroup()
 
-  prev_yr_var_df <- right_join(cur_yr_df %>% select(wk_num_in_yr
-                                                    # , wk_start_date
-                                                    , !!metric, type),
+  prev_yr_var_df <- right_join(cur_yr_df %>% select(wk_num_in_yr, !!metric, type),
                                prev_yr_df %>% select(wk_num_in_yr, !!metric),
                                by = c("wk_num_in_yr" = "wk_num_in_yr"),
                                suffix = c("_cur_yr","_prev_yr")) %>%
-    # mutate_at(vars(UQ(metric_cur_yr_name), UQ(metric_prev_yr_name)), funs(div_by_one_thousand(.))) %>%
-    # { if(temp_cond)
-    # mutate_at(vars(UQ(metric_cur_yr_name), UQ(metric_prev_yr_name)), funs(round_to_two(.))) %>%
-    # } %>%
     mutate(
      !!metric_prev_yr_var_name :=
        round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
               /
                 (UQ(metric_prev_yr_name)), 2 )
    )
+
+
+
+  if(div_by_one_thousand){
+    prev_yr_var_df <- prev_yr_var_df %>% mutate_at(vars(!!metric_cur_yr_name, !!metric_prev_yr_name), funs(div_by_one_thousand))
+  }
+
+  if(accounting){
+
+    prev_yr_var_df <- prev_yr_var_df %>%
+      mutate_at(
+        vars(
+          !!metric_cur_yr_name,
+          !!metric_prev_yr_name
+          # ,
+          # !!metric_prev_yr_var_name ### BUG, won't wrap negative numbers in parenthesis
+        ),
+        funs(prettyNum(., big.mark = ","))
+      )
+
+    prev_yr_var_df <- prev_yr_var_df %>%
+      mutate_at(vars(!!metric_prev_yr_var_name),
+                funs(neg_paren))
+  }
+
+
+
+  #### SPARKLINE #####
 
   # if(sparkline == TRUE){
 
@@ -117,6 +157,8 @@ week_view <- function(
 
   # }
 
+  ### add 'w' for week nums & and opt in adding suffixs
+
   prev_yr_var_df <- prev_yr_var_df %>%
     mutate(wk_num_in_yr = paste0("w", wk_num_in_yr),
            !!metric_cur_yr_name := paste0(!!metric_cur_yr_name, suffix),
@@ -124,13 +166,13 @@ week_view <- function(
 
   if(!missing(new_name)){
 
-    prev_yr_var_df <- prev_yr_var_df %>% rename(!!new_name := UQ(metric_cur_yr_name),
-                                                `Prior Year` = UQ(metric_prev_yr_name),
-                                                `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name))
+    prev_yr_var_df <- prev_yr_var_df %>% rename(
+      !!new_name := UQ(metric_cur_yr_name),
+      `Prior Year` = UQ(metric_prev_yr_name),
+      `Variance vs. Prior Year` = UQ(metric_prev_yr_var_name)
+    )
 
   }
-
-
 
   final <- prev_yr_var_df %>%
     gather(metric, value, -wk_num_in_yr) %>%

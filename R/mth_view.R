@@ -13,7 +13,9 @@ mth_view <- function(
   metric_9p3,
   mth_rr = TRUE,
   show_type = FALSE,
-  new_name = NULL
+  new_name = NULL,
+  div_by_one_thousand = TRUE,
+  accounting = TRUE
 ) {
 
 ###### message to clarify ACTUAL vs RUN RATE ######
@@ -232,8 +234,6 @@ final <- right_join(
   prev_yr_df %>% ungroup(), # isolate last year's data
   by = "mth_num_in_yr",
   suffix = c("_cur_yr", "_prev_yr")) %>%
-  # mutate_at(vars(UQ(metric_cur_yr_name), UQ(metric_prev_yr_name)), funs(div_by_one_thousand(.))) %>%
-  # mutate_at(vars(UQ(metric_cur_yr_name), UQ(metric_prev_yr_name)), funs(round_to_two(.))) %>%
   mutate(
     !!metric_prev_yr_var_name :=
       round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
@@ -241,6 +241,34 @@ final <- right_join(
                (UQ(metric_prev_yr_name)), 2 )
   ) %>%
   ungroup()
+
+###
+
+###
+
+if(div_by_one_thousand){
+  final <- final %>% mutate_at(vars(!!metric_cur_yr_name, !!metric_prev_yr_name), funs(div_by_one_thousand))
+}
+
+if(accounting){
+
+  final <- final %>%
+    mutate_at(
+      vars(
+        !!metric_cur_yr_name,
+        !!metric_prev_yr_name
+        # ,
+        # !!metric_prev_yr_var_name ### BUG, won't wrap negative numbers in parenthesis
+      ),
+      funs(prettyNum(., big.mark = ","))
+    )
+
+  final <- final %>%
+    mutate_at(
+      vars(!!metric_prev_yr_var_name),
+      funs(neg_paren)
+    )
+}
 
 ###
 

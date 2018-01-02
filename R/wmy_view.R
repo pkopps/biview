@@ -23,7 +23,9 @@ wmy_view <- function(
   yr_rr = TRUE,
   show_type = FALSE,
   num_wks_to_show = 4,
-  new_name
+  new_name,
+  div_by_one_thousand = TRUE,
+  accounting = TRUE
 ){
 
 if(missing(metric_op2)){
@@ -36,7 +38,9 @@ if(missing(metric_op2)){
       metric = !!metric,
       show_type = show_type,
       num_wks_to_show = num_wks_to_show,
-      new_name = new_name
+      new_name = new_name,
+      div_by_one_thousand = div_by_one_thousand,
+      accounting = accounting
     ) -> week_res
 
     mth_view(
@@ -46,7 +50,9 @@ if(missing(metric_op2)){
       # metric_op2 = !!metric_op2,
       mth_rr = mth_rr,
       show_type = show_type,
-      new_name = new_name
+      new_name = new_name,
+      div_by_one_thousand = div_by_one_thousand,
+      accounting = accounting
     ) -> month_res
 
     yr_view(
@@ -85,7 +91,9 @@ else if(!missing(metric_op2)){
     metric = !!metric,
     show_type = show_type,
     num_wks_to_show = num_wks_to_show,
-    new_name = new_name
+    new_name = new_name,
+    div_by_one_thousand = div_by_one_thousand,
+    accounting = accounting
   ) -> week_res
 
   mth_view(
@@ -95,7 +103,9 @@ else if(!missing(metric_op2)){
     metric_op2 = !!metric_op2,
     mth_rr = mth_rr,
     show_type = show_type,
-    new_name = new_name
+    new_name = new_name,
+    div_by_one_thousand = div_by_one_thousand,
+    accounting = accounting
   ) -> month_res
 
   yr_view(

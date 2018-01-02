@@ -7,10 +7,10 @@ wk_rate <- function(
   show_type = FALSE,
   num_wks_to_show = 4,
   new_name = NULL,
-  scaler = 1,
-  round = 2,
   prefix = "",
-  suffix = ""
+  suffix = "",
+  scaler = 1,
+  round = 2
   # ,
   # sparkline = FALSE
 ) {
