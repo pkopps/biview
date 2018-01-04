@@ -24,7 +24,7 @@ round_to_two <- function(x){
   round(x, 2)
 }
 
-date_seq <- seq(as.Date("2016-01-01"), as.Date("2017-12-31"), "day")
+date_seq <- seq(as.Date("2017-01-01"), Sys.Date(), "day")
 
 today <- Sys.Date()
 # cur_month <- lubridate::month(Sys.Date())

@@ -22,7 +22,7 @@ year_percent_run_rate <- function(
   cur_mth <- df %>% filter(yr_num == cur_yr) %>% summarise(max(mth_num_in_yr)) %>% pull()
   prev_mth <- cur_mth - 1
   today <- max(df$date_value)
-  today_prev_mth <- today - 30
+  today_prev_mth <- today - 29
   today_prev_yr <- today - 365
 
   prev_yr_actuals_df <- df %>% filter(

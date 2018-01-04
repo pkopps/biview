@@ -141,6 +141,9 @@ if(!missing(metric_op2)){
 
   }
 
+  print(cur_yr_df)
+
+
   ###
 
   final <-

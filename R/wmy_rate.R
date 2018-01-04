@@ -1,6 +1,6 @@
 # wmy_view percent
 
-wmy_view_percent <- function(df,
+wmy_rate <- function(df,
                   numerator,
                   denominator,
                   # df_op2,

@@ -46,8 +46,8 @@ week_view <- function(
 cur_yr <- max(df$yr_num)
 prev_yr <- cur_yr - 1
 # cur_mth <- max(df$mth_num_in_yr)
-cur_mth <- df %>% filter(yr_num == cur_yr) %>% summarise(max(mth_num_in_yr)) %>% pull()
-prev_mth <- cur_mth - 1
+# cur_mth <- df %>% filter(yr_num == cur_yr) %>% summarise(max(mth_num_in_yr)) %>% pull()
+# prev_mth <- cur_mth - 1
 today <- max(df$date_value)
 today_prev_mth <- today - 30
 
@@ -85,18 +85,16 @@ today_prev_mth <- today - 30
   }
 
   cur_yr_df <- df %>% filter(yr_num == cur_yr) %>%
-    group_by(yr_num, wk_num_in_yr
-             ) %>%
+    group_by(yr_num, wk_num_in_yr) %>%
     summarise_at(vars(!!metric), funs(round_sum)) %>%
     # summarise_at(vars(!!metric), funs(sum)) %>%
     mutate(
-      type = "actual",
-      pop = round( 100 * ( ( (!!metric) - lag(!!metric) ) / lag(!!metric) ), 2 )
+      type = "actual"
+      # ,
+      # pop = round( 100 * ( ( (!!metric) - lag(!!metric) ) / lag(!!metric) ), 2 )
       ) %>%
     filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
     ungroup()
-
-  # print(cur_yr_df)
 
   prev_yr_df <- df %>% filter(yr_num == prev_yr) %>%
     group_by(yr_num, wk_num_in_yr) %>%
@@ -116,8 +114,6 @@ today_prev_mth <- today - 30
               /
                 (UQ(metric_prev_yr_name)), 2 )
    )
-
-
 
   if(div_by_one_thousand){
     prev_yr_var_df <- prev_yr_var_df %>% mutate_at(vars(!!metric_cur_yr_name, !!metric_prev_yr_name), funs(div_by_one_thousand))
