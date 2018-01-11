@@ -89,7 +89,10 @@ prev_yr <- cur_yr - 1
 
   # wk_safety_df <- tibble(wk_num_in_yr = df %>% select(wk_num_in_yr) %>% pull() %>% unique())
 
-  wk_array <- df %>% select(wk_num_in_yr) %>% pull() %>% unique()
+  wk_array <- df %>% filter(wk_end_date_value >= floor_date((Sys.Date() - (7 * num_wks_to_show)), 'week')) %>%
+    arrange(wk_end_date_value) %>%
+    mutate(wk_num_in_yr = wk_num_in_yr %>% as.character() %>% as_factor()) %>%
+    select(wk_num_in_yr, wk_end_date_value)
 
   cur_yr_df <- df %>% filter(yr_num == cur_yr) %>%
     group_by(yr_num, wk_num_in_yr, wk_end_date_value) %>%
@@ -100,16 +103,19 @@ prev_yr <- cur_yr - 1
       # pop = round( 100 * ( ( (!!metric) - lag(!!metric) ) / lag(!!metric) ), 2 )
       ) %>%
     # filter(between(wk_num_in_yr, cur_yr_prev_wk - (num_wks_to_show - 1), cur_yr_prev_wk)) %>%
-    filter(wk_num_in_yr %in% wk_array) %>%
+    filter(wk_num_in_yr %in% wk_array$wk_num_in_yr) %>%
     ungroup()
+
+  cur_yr_df <- left_join(wk_array, cur_yr_df %>% mutate(wk_num_in_yr = wk_num_in_yr %>% as.character() %>% as_factor()))
 
   prev_yr_df <- df %>% filter(yr_num == prev_yr) %>%
     group_by(yr_num, wk_num_in_yr) %>%
     summarise_at(vars(!!metric), funs(round_sum)) %>%
     # summarise_at(vars(!!metric), funs(sum)) %>%
     mutate(type = "actual") %>%
+    mutate(wk_num_in_yr = wk_num_in_yr %>% as.character() %>% as_factor()) %>%
     # filter(between(wk_num_in_yr, prev_yr_prev_wk - (num_wks_to_show - 1), prev_yr_prev_wk)) %>%
-    filter(wk_num_in_yr %in% wk_array) %>%
+    filter(wk_num_in_yr %in% wk_array$wk_num_in_yr) %>%
     ungroup()
 
   prev_yr_var_df <- full_join(
@@ -123,10 +129,7 @@ prev_yr <- cur_yr - 1
        round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
               /
                 (UQ(metric_prev_yr_name)), 2 )
-   ) %>%
-  arrange(wk_end_date_value %>% desc())
-
-  print(prev_yr_var_df)
+   )
 
   if(div_by_one_thousand){
     prev_yr_var_df <- prev_yr_var_df %>% mutate_at(vars(!!metric_cur_yr_name, !!metric_prev_yr_name), funs(div_by_one_thousand))
@@ -148,6 +151,7 @@ prev_yr <- cur_yr - 1
     prev_yr_var_df <- prev_yr_var_df %>%
       mutate_at(vars(!!metric_prev_yr_var_name),
                 funs(neg_paren))
+
   }
 
 
@@ -169,9 +173,12 @@ prev_yr <- cur_yr - 1
   ### add 'w' for week nums & and opt in adding suffixs
 
   prev_yr_var_df <- prev_yr_var_df %>%
-    mutate(wk_num_in_yr = paste0("w", wk_num_in_yr),
-           !!metric_cur_yr_name := paste0(!!metric_cur_yr_name, suffix),
-           !!metric_prev_yr_name := paste0(!!metric_prev_yr_name, suffix))
+    mutate(wk_num_in_yr = wk_num_in_yr %>% as.character() %>% as_factor()) %>%
+    mutate(
+      # wk_num_in_yr = paste0("w", wk_num_in_yr),
+      !!metric_cur_yr_name := paste0(!!metric_cur_yr_name, suffix),
+      !!metric_prev_yr_name := paste0(!!metric_prev_yr_name, suffix)
+    )
 
   if(!missing(new_name)){
 
@@ -197,8 +204,6 @@ prev_yr <- cur_yr - 1
   final <- final %>% arrange(
     metric = ordered(metric, levels = ordering_array)
   )
-
-  # final <- final %>% select(metric, w50, w51, w52, w1)
 
   final
 
