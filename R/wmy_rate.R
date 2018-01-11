@@ -1,18 +1,19 @@
 # wmy_view percent
 
-wmy_rate <- function(df,
-                  numerator,
-                  denominator,
-                  # df_op2,
-                  # metric_op2,
-                  # percent_of_total = FALSE,
-                  run_rate = TRUE,
-                  show_type = FALSE,
-                  num_wks_to_show = 4,
-                  new_name,
-                  prefix = "",
-                  suffix = "",
-                  scaler = 1
+wmy_rate <- function(
+  df,
+  numerator,
+  denominator,
+  # df_op2,
+  # metric_op2,
+  # percent_of_total = FALSE,
+  run_rate = TRUE,
+  show_type = FALSE,
+  num_wks_to_show = 4,
+  new_name,
+  prefix = "",
+  suffix = "",
+  scaler = 1
 ){
 
   numerator <- enquo(numerator)

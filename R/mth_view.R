@@ -15,7 +15,9 @@ mth_view <- function(
   show_type = FALSE,
   new_name = NULL,
   div_by_one_thousand = TRUE,
-  accounting = TRUE
+  accounting = TRUE,
+  rate = FALSE,
+  show_full_year = TRUE
 ) {
 
 ###### message to clarify ACTUAL vs RUN RATE ######
@@ -36,8 +38,8 @@ mth_view <- function(
   # cur_mth <- max(df$mth_num_in_yr)
   cur_mth <- df %>% filter(yr_num == cur_yr) %>% summarise(max(mth_num_in_yr)) %>% pull()
   prev_mth <- cur_mth - 1
-  today <- max(df$date_value)
-  today_prev_mth <- today - 30
+  # today <- max(df$date_value)
+  # today_prev_mth <- today - 30
 
 ###### create quosures and quosure names to use non-standardly ######
 
@@ -66,8 +68,8 @@ if(!missing(metric_op2)){
 
 if(!missing(metric_3p9)){
 
-    metric_3p9 <- enquo(metric_3p9)
-    metric_3p9_name <- quo_name(metric_3p9)
+  metric_3p9 <- enquo(metric_3p9)
+  metric_3p9_name <- quo_name(metric_3p9)
 
 }
 
@@ -229,6 +231,21 @@ if(!missing(metric_9p3)){
 
 ###### previous year variance calculation ######
 
+if(rate == TRUE){
+
+  final <- right_join(
+    cur_yr_df %>% ungroup(),
+    prev_yr_df %>% ungroup(), # isolate last year's data
+    by = "mth_num_in_yr",
+    suffix = c("_cur_yr", "_prev_yr")) %>%
+    mutate(
+      !!metric_prev_yr_var_name :=
+        round( ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) ), 2 )
+    ) %>%
+    ungroup()
+
+}else{
+
 final <- right_join(
   cur_yr_df %>% ungroup(),
   prev_yr_df %>% ungroup(), # isolate last year's data
@@ -241,6 +258,8 @@ final <- right_join(
                (UQ(metric_prev_yr_name)), 2 )
   ) %>%
   ungroup()
+
+}
 
 ###
 

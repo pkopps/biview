@@ -7,7 +7,8 @@ yr_view <- function(
   metric_op2,
   show_type = FALSE,
   new_name = NULL,
-  yr_rr = TRUE
+  yr_rr = FALSE,
+  rate = FALSE
   # ,
   # funct = sum
   # ,
@@ -112,11 +113,6 @@ if(!missing(metric_op2)){
     cur_yr_df <- rr
   }
 
-  # if(yr_rr == "monthly"){
-  #   rr <- yr_rr_using_mths(df = df, metric = !!metric)
-  #   cur_yr_df <- rr
-  # }
-
   ###
 
   ###### opt in to add op2 view ######
@@ -140,8 +136,6 @@ if(!missing(metric_op2)){
       ungroup()
 
   }
-
-  print(cur_yr_df)
 
 
   ###

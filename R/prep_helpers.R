@@ -36,7 +36,8 @@ prev_yr <- year(Sys.Date() - (365 + 2))
 cur_mth <- month(Sys.Date())
 prev_mth <- month(Sys.Date()) - 1
 
-prev_wk <- week(Sys.Date() - 7)
+cur_yr_prev_wk <- week(Sys.Date() - 7)
+prev_yr_prev_wk <- week((Sys.Date() - 365) - 7)
 
 today <- Sys.Date()
 today_prev_mth <- Sys.Date() - 30 # is this the correct way to do this?

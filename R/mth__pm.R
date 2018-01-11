@@ -1,10 +1,16 @@
-mth_rpm <- function(
+mth__pm <- function(
   df_numerator,
   numerator,
   df_denominator,
   denominator,
   df_op2,
   metric_op2,
+  df_3p9,
+  metric_3p9,
+  df_6p6,
+  metric_6p6,
+  df_9p3,
+  metric_9p3,
   run_rate = FALSE,
   show_type = FALSE,
   new_name = NULL,
@@ -24,6 +30,37 @@ mth_rpm <- function(
 
   denominator <- enquo(denominator)
   denominator_name <- quo_name(denominator)
+
+  if(!missing(metric_op2)){
+
+    metric_op2 <- enquo(metric_op2)
+    metric_op2_name <- quo_name(metric_op2)
+
+    metric_op2_var_name <- paste(metric_name, "op2_var", sep = "_")
+    metric_op2_var <- enquo(metric_op2_var_name)
+
+  }
+
+  if(!missing(metric_3p9)){
+
+    metric_3p9 <- enquo(metric_3p9)
+    metric_3p9_name <- quo_name(metric_3p9)
+
+  }
+
+  if(!missing(metric_6p6)){
+
+    metric_6p6 <- enquo(metric_6p6)
+    metric_6p6_name <- quo_name(metric_6p6)
+
+  }
+
+  if(!missing(metric_9p3)){
+
+    metric_9p3 <- enquo(metric_9p3)
+    metric_9p3_name <- quo_name(metric_9p3)
+
+  }
 
   cur_yr <- max(df_numerator$yr_num)
   prev_yr <- cur_yr - 1
@@ -53,10 +90,28 @@ mth_rpm <- function(
     group_by(yr_num, mth_num_in_yr) %>%
     summarise_at(vars(!!numerator), funs(sum(., na.rm=TRUE)))
 
+  # dfd <- df_denominator %>%
+  #   filter(mth_eop == 1) %>%
+  #   group_by(yr_num, mth_num_in_yr) %>%
+  #   summarise_at(vars(!!denominator), funs(sum(., na.rm=TRUE)))
+
   dfd <- df_denominator %>%
-    filter(mth_eop == 1) %>%
-    group_by(yr_num, mth_num_in_yr) %>%
-    summarise_at(vars(!!denominator), funs(sum(., na.rm=TRUE)))
+    filter(mth_bop == 1 | mth_eop == 1) %>%
+    select(yr_num, mth_num_in_yr, date_value, mth_bop, mth_eop, `Members (BOP)`, `Members (EOP)`) %>%
+    mutate(
+      bop = case_when(
+        mth_bop == 1 ~ `Members (BOP)`,
+        TRUE ~ as.integer(0)
+      ),
+      eop = case_when(
+        mth_eop == 1 ~ `Members (EOP)`,
+        TRUE ~ as.integer(0)
+      )
+    ) %>% group_by(
+      yr_num, mth_num_in_yr
+    ) %>%
+    summarise_at(vars(bop, eop), funs(sum)) %>%
+    mutate(avg_memberbase = (bop + eop) / 2)
 
   dfnd <- left_join(dfn, dfd)
 
@@ -66,8 +121,8 @@ mth_rpm <- function(
 
   cur_yr_df <- dfnd %>%
     filter(yr_num == cur_yr) %>%
-    group_by(yr_num, mth_num_in_yr) %>%
-    summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
+    # group_by(yr_num, mth_num_in_yr) %>%
+    # summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
     mutate(
       rate = round(scaler * ( UQ(numerator) / UQ(denominator) ), round),
       type = "actual") %>%
@@ -85,8 +140,8 @@ mth_rpm <- function(
   ###
 
   prev_yr_df <- dfnd %>% filter(yr_num == prev_yr) %>%
-    group_by(yr_num, mth_num_in_yr) %>%
-    summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
+    # group_by(yr_num, mth_num_in_yr) %>%
+    # summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
     mutate(
       rate = round(scaler * ( UQ(numerator) / UQ(denominator) ), round),
       type = "actual") %>%

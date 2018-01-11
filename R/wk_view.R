@@ -45,11 +45,12 @@ week_view <- function(
 
 cur_yr <- max(df$yr_num)
 prev_yr <- cur_yr - 1
+
 # cur_mth <- max(df$mth_num_in_yr)
 # cur_mth <- df %>% filter(yr_num == cur_yr) %>% summarise(max(mth_num_in_yr)) %>% pull()
 # prev_mth <- cur_mth - 1
-today <- max(df$date_value)
-today_prev_mth <- today - 30
+# today <- max(df$date_value)
+# today_prev_mth <- today - 30
 
 ###
 
@@ -84,16 +85,22 @@ today_prev_mth <- today - 30
                         metric_prev_yr_var_name)
   }
 
+  # df <- df %>% filter(wk_end_date_value >= floor_date((Sys.Date() - (7 * num_wks_to_show)), 'week'))
+
+  # wk_safety_df <- tibble(wk_num_in_yr = df %>% select(wk_num_in_yr) %>% pull() %>% unique())
+
+  wk_array <- df %>% select(wk_num_in_yr) %>% pull() %>% unique()
+
   cur_yr_df <- df %>% filter(yr_num == cur_yr) %>%
-    group_by(yr_num, wk_num_in_yr) %>%
+    group_by(yr_num, wk_num_in_yr, wk_end_date_value) %>%
     summarise_at(vars(!!metric), funs(round_sum)) %>%
-    # summarise_at(vars(!!metric), funs(sum)) %>%
     mutate(
       type = "actual"
       # ,
       # pop = round( 100 * ( ( (!!metric) - lag(!!metric) ) / lag(!!metric) ), 2 )
       ) %>%
-    filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
+    # filter(between(wk_num_in_yr, cur_yr_prev_wk - (num_wks_to_show - 1), cur_yr_prev_wk)) %>%
+    filter(wk_num_in_yr %in% wk_array) %>%
     ungroup()
 
   prev_yr_df <- df %>% filter(yr_num == prev_yr) %>%
@@ -101,19 +108,25 @@ today_prev_mth <- today - 30
     summarise_at(vars(!!metric), funs(round_sum)) %>%
     # summarise_at(vars(!!metric), funs(sum)) %>%
     mutate(type = "actual") %>%
-    filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
+    # filter(between(wk_num_in_yr, prev_yr_prev_wk - (num_wks_to_show - 1), prev_yr_prev_wk)) %>%
+    filter(wk_num_in_yr %in% wk_array) %>%
     ungroup()
 
-  prev_yr_var_df <- right_join(cur_yr_df %>% select(wk_num_in_yr, !!metric, type),
-                               prev_yr_df %>% select(wk_num_in_yr, !!metric),
-                               by = c("wk_num_in_yr" = "wk_num_in_yr"),
-                               suffix = c("_cur_yr","_prev_yr")) %>%
+  prev_yr_var_df <- full_join(
+    cur_yr_df %>% select(wk_num_in_yr, wk_end_date_value, !!metric, type),
+    prev_yr_df %>% select(wk_num_in_yr, !!metric),
+    by = c("wk_num_in_yr" = "wk_num_in_yr"),
+    suffix = c("_cur_yr","_prev_yr")
+  ) %>%
     mutate(
      !!metric_prev_yr_var_name :=
        round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
               /
                 (UQ(metric_prev_yr_name)), 2 )
-   )
+   ) %>%
+  arrange(wk_end_date_value %>% desc())
+
+  print(prev_yr_var_df)
 
   if(div_by_one_thousand){
     prev_yr_var_df <- prev_yr_var_df %>% mutate_at(vars(!!metric_cur_yr_name, !!metric_prev_yr_name), funs(div_by_one_thousand))
@@ -184,6 +197,8 @@ today_prev_mth <- today - 30
   final <- final %>% arrange(
     metric = ordered(metric, levels = ordering_array)
   )
+
+  # final <- final %>% select(metric, w50, w51, w52, w1)
 
   final
 

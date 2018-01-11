@@ -1,4 +1,4 @@
-wk_rpm <- function(
+wk__pm <- function(
   df_numerator,
   numerator,
   df_denominator,
