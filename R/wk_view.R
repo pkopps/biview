@@ -175,7 +175,7 @@ prev_yr <- cur_yr - 1
   prev_yr_var_df <- prev_yr_var_df %>%
     mutate(wk_num_in_yr = wk_num_in_yr %>% as.character() %>% as_factor()) %>%
     mutate(
-      # wk_num_in_yr = paste0("w", wk_num_in_yr),
+      wk_num_in_yr = paste0("w", wk_num_in_yr) %>% as.character() %>% as_factor(),
       !!metric_cur_yr_name := paste0(!!metric_cur_yr_name, suffix),
       !!metric_prev_yr_name := paste0(!!metric_prev_yr_name, suffix)
     )
