@@ -22,7 +22,7 @@ wmy_view_3e <- function(
   metric,
   df_op2,
   metric_op2,
-  mth_rr = TRUE,
+  mth_rr = FALSE,
   yr_rr = TRUE,
   show_type = FALSE,
   num_wks_to_show = 4,

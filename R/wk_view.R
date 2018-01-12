@@ -26,33 +26,19 @@ week_view <- function(
   # sparkline = FALSE
 ) {
 
-###### Error messaging ######
+  ###### Error messaging ######
 
   if(missing(df)){ stop("'df' argument is mandatory") }
   if(missing(metric)){ stop("'metric' argument is mandatory") }
 
-  required_cols <- list(
-    'yr_num',
-    'mth_num_in_yr',
-    'wk_num_in_yr'
-  )
+  ###
 
-  # if(any(!(required_cols %in% names(df)))){ stop("'df' argument missing required time dimension column(s): must have 'yr_num', 'mth_num_in_yr', and 'wk_num_in_yr'") }
+  ###
 
-###
+  cur_yr <- max(df$yr_num)
+  prev_yr <- cur_yr - 1
 
-###
-
-cur_yr <- max(df$yr_num)
-prev_yr <- cur_yr - 1
-
-# cur_mth <- max(df$mth_num_in_yr)
-# cur_mth <- df %>% filter(yr_num == cur_yr) %>% summarise(max(mth_num_in_yr)) %>% pull()
-# prev_mth <- cur_mth - 1
-# today <- max(df$date_value)
-# today_prev_mth <- today - 30
-
-###
+  ###
 
   if(!missing(new_name)) new_name <- quo_name(new_name)
 
@@ -85,25 +71,23 @@ prev_yr <- cur_yr - 1
                         metric_prev_yr_var_name)
   }
 
-  # df <- df %>% filter(wk_end_date_value >= floor_date((Sys.Date() - (7 * num_wks_to_show)), 'week'))
-
-  # wk_safety_df <- tibble(wk_num_in_yr = df %>% select(wk_num_in_yr) %>% pull() %>% unique())
-
   wk_array <- df %>% filter(wk_end_date_value >= floor_date((Sys.Date() - (7 * num_wks_to_show)), 'week')) %>%
     arrange(wk_end_date_value) %>%
     mutate(wk_num_in_yr = wk_num_in_yr %>% as.character() %>% as_factor()) %>%
-    select(wk_num_in_yr, wk_end_date_value)
+    select(wk_num_in_yr, wk_end_date_value) %>%
+    group_by(wk_num_in_yr, wk_end_date_value) %>%
+    summarise_all(sum) %>%
+    ungroup()
 
   cur_yr_df <- df %>% filter(yr_num == cur_yr) %>%
+    filter(wk_num_in_yr %in% wk_array$wk_num_in_yr) %>%
     group_by(yr_num, wk_num_in_yr, wk_end_date_value) %>%
     summarise_at(vars(!!metric), funs(round_sum)) %>%
     mutate(
       type = "actual"
       # ,
       # pop = round( 100 * ( ( (!!metric) - lag(!!metric) ) / lag(!!metric) ), 2 )
-      ) %>%
-    # filter(between(wk_num_in_yr, cur_yr_prev_wk - (num_wks_to_show - 1), cur_yr_prev_wk)) %>%
-    filter(wk_num_in_yr %in% wk_array$wk_num_in_yr) %>%
+    ) %>%
     ungroup()
 
   cur_yr_df <- left_join(wk_array, cur_yr_df %>% mutate(wk_num_in_yr = wk_num_in_yr %>% as.character() %>% as_factor()))
@@ -125,11 +109,11 @@ prev_yr <- cur_yr - 1
     suffix = c("_cur_yr","_prev_yr")
   ) %>%
     mutate(
-     !!metric_prev_yr_var_name :=
-       round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
-              /
-                (UQ(metric_prev_yr_name)), 2 )
-   )
+      !!metric_prev_yr_var_name :=
+        round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
+               /
+                 (UQ(metric_prev_yr_name)), 2 )
+    )
 
   if(div_by_one_thousand){
     prev_yr_var_df <- prev_yr_var_df %>% mutate_at(vars(!!metric_cur_yr_name, !!metric_prev_yr_name), funs(div_by_one_thousand))
@@ -160,13 +144,13 @@ prev_yr <- cur_yr - 1
 
   # if(sparkline == TRUE){
 
-    # metric_cur_yr_spark <- prev_yr_var_df %>% pull(!!metric_cur_yr_name) %>% sparkline()
-    # metric_prev_yr_spark <- prev_yr_var_df %>% pull(!!metric_prev_yr_name) %>% sparkline()
-    # metric_prev_yr_var_spark <- prev_yr_var_df %>% pull(!!metric_prev_yr_var_name) %>% sparkline(type = 'bar')
+  # metric_cur_yr_spark <- prev_yr_var_df %>% pull(!!metric_cur_yr_name) %>% sparkline()
+  # metric_prev_yr_spark <- prev_yr_var_df %>% pull(!!metric_prev_yr_name) %>% sparkline()
+  # metric_prev_yr_var_spark <- prev_yr_var_df %>% pull(!!metric_prev_yr_var_name) %>% sparkline(type = 'bar')
 
-    # spark_df <- rbind(metric_cur_yr_spark,
-    #                   metric_prev_yr_spark,
-    #                   metric_prev_yr_var_spark)
+  # spark_df <- rbind(metric_cur_yr_spark,
+  #                   metric_prev_yr_spark,
+  #                   metric_prev_yr_var_spark)
 
   # }
 
@@ -191,6 +175,7 @@ prev_yr <- cur_yr - 1
   }
 
   final <- prev_yr_var_df %>%
+    select(-wk_end_date_value) %>%
     gather(metric, value, -wk_num_in_yr) %>%
     spread(wk_num_in_yr, value)
 

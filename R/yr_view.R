@@ -8,7 +8,9 @@ yr_view <- function(
   show_type = FALSE,
   new_name = NULL,
   yr_rr = FALSE,
-  rate = FALSE
+  rate = FALSE,
+  div_by_one_thousand = TRUE,
+  accounting = TRUE
   # ,
   # funct = sum
   # ,
@@ -147,6 +149,35 @@ if(!missing(metric_op2)){
                 /
                   (UQ(metric_prev_yr_name)), 2 )
      )
+
+  ###
+
+  if(div_by_one_thousand){
+    final <- final %>% mutate_at(vars(!!metric_cur_yr_name, !!metric_prev_yr_name), funs(div_by_one_thousand))
+  }
+
+  if(accounting){
+
+    final <- final %>%
+      mutate_at(
+        vars(
+          !!metric_cur_yr_name,
+          !!metric_prev_yr_name
+          # ,
+          # !!metric_prev_yr_var_name ### BUG, won't wrap negative numbers in parenthesis
+        ),
+        funs(prettyNum(., big.mark = ","))
+      )
+
+    final <- final %>%
+      mutate_at(
+        vars(!!metric_prev_yr_var_name),
+        funs(neg_paren)
+      )
+  }
+
+  ###
+
 
   # if(sparkline == TRUE){
 

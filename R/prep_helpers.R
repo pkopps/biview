@@ -7,7 +7,7 @@ library(glue)
 
 neg_paren <- function(x){
   ind <- grepl("-", x)
-  x[ind] <-  paste0("(", sub("-", "", x[ind]), ")")
+  x[ind] <-  paste0("(", sub("-", "", x[ind]), "%)")
   x
 }
 

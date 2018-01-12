@@ -11,7 +11,7 @@ mth_view <- function(
   metric_6p6,
   df_9p3,
   metric_9p3,
-  mth_rr = TRUE,
+  mth_rr = FALSE,
   show_type = FALSE,
   new_name = NULL,
   div_by_one_thousand = TRUE,
