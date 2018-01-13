@@ -17,7 +17,8 @@ mth_view <- function(
   div_by_one_thousand = TRUE,
   accounting = TRUE,
   rate = FALSE,
-  show_full_year = TRUE
+  show_full_year = TRUE,
+  suffix = ""
 ) {
 
 ###### message to clarify ACTUAL vs RUN RATE ######

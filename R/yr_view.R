@@ -10,7 +10,8 @@ yr_view <- function(
   yr_rr = FALSE,
   rate = FALSE,
   div_by_one_thousand = TRUE,
-  accounting = TRUE
+  accounting = TRUE,
+  suffix = ""
   # ,
   # funct = sum
   # ,

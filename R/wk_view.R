@@ -21,9 +21,8 @@ week_view <- function(
   new_name = NULL,
   suffix = "",
   div_by_one_thousand = TRUE,
-  accounting = TRUE
-  # ,
-  # sparkline = FALSE
+  accounting = TRUE,
+  sparkline = FALSE
 ) {
 
   ###### Error messaging ######
@@ -71,17 +70,17 @@ week_view <- function(
                         metric_prev_yr_var_name)
   }
 
-  wk_array <- df %>% filter(wk_end_date_value >= floor_date((Sys.Date() - (7 * num_wks_to_show)), 'week')) %>%
-    arrange(wk_end_date_value) %>%
+  wk_array <- df %>% filter(wk_end_date >= floor_date((Sys.Date() - (7 * num_wks_to_show)), 'week')) %>%
+    arrange(wk_end_date) %>%
     mutate(wk_num_in_yr = wk_num_in_yr %>% as.character() %>% as_factor()) %>%
-    select(wk_num_in_yr, wk_end_date_value) %>%
-    group_by(wk_num_in_yr, wk_end_date_value) %>%
+    select(wk_num_in_yr, wk_end_date) %>%
+    group_by(wk_num_in_yr, wk_end_date) %>%
     summarise_all(sum) %>%
     ungroup()
 
   cur_yr_df <- df %>% filter(yr_num == cur_yr) %>%
     filter(wk_num_in_yr %in% wk_array$wk_num_in_yr) %>%
-    group_by(yr_num, wk_num_in_yr, wk_end_date_value) %>%
+    group_by(yr_num, wk_num_in_yr, wk_end_date) %>%
     summarise_at(vars(!!metric), funs(round_sum)) %>%
     mutate(
       type = "actual"
@@ -103,7 +102,7 @@ week_view <- function(
     ungroup()
 
   prev_yr_var_df <- full_join(
-    cur_yr_df %>% select(wk_num_in_yr, wk_end_date_value, !!metric, type),
+    cur_yr_df %>% select(wk_num_in_yr, wk_end_date, !!metric, type),
     prev_yr_df %>% select(wk_num_in_yr, !!metric),
     by = c("wk_num_in_yr" = "wk_num_in_yr"),
     suffix = c("_cur_yr","_prev_yr")
@@ -114,6 +113,24 @@ week_view <- function(
                /
                  (UQ(metric_prev_yr_name)), 2 )
     )
+
+  #### SPARKLINE #####
+
+  if(sparkline == TRUE){ ### TODO: create df instead of arrary and do left join by metric name
+
+    metric_cur_yr_spark <- prev_yr_var_df %>% pull(!!metric_cur_yr_name) %>% spk_chr(type='line')
+    metric_prev_yr_spark <- prev_yr_var_df %>% pull(!!metric_prev_yr_name) %>% spk_chr(type = 'line')
+    metric_prev_yr_var_spark <- prev_yr_var_df %>% pull(!!metric_prev_yr_var_name) %>% spk_chr(type = 'line')
+
+    spark <- c(
+      metric_cur_yr_spark,
+      metric_prev_yr_spark,
+      metric_prev_yr_var_spark
+    )
+
+    print(spark)
+
+  }
 
   if(div_by_one_thousand){
     prev_yr_var_df <- prev_yr_var_df %>% mutate_at(vars(!!metric_cur_yr_name, !!metric_prev_yr_name), funs(div_by_one_thousand))
@@ -138,22 +155,6 @@ week_view <- function(
 
   }
 
-
-
-  #### SPARKLINE #####
-
-  # if(sparkline == TRUE){
-
-  # metric_cur_yr_spark <- prev_yr_var_df %>% pull(!!metric_cur_yr_name) %>% sparkline()
-  # metric_prev_yr_spark <- prev_yr_var_df %>% pull(!!metric_prev_yr_name) %>% sparkline()
-  # metric_prev_yr_var_spark <- prev_yr_var_df %>% pull(!!metric_prev_yr_var_name) %>% sparkline(type = 'bar')
-
-  # spark_df <- rbind(metric_cur_yr_spark,
-  #                   metric_prev_yr_spark,
-  #                   metric_prev_yr_var_spark)
-
-  # }
-
   ### add 'w' for week nums & and opt in adding suffixs
 
   prev_yr_var_df <- prev_yr_var_df %>%
@@ -175,9 +176,10 @@ week_view <- function(
   }
 
   final <- prev_yr_var_df %>%
-    select(-wk_end_date_value) %>%
+    select(-wk_end_date) %>%
     gather(metric, value, -wk_num_in_yr) %>%
     spread(wk_num_in_yr, value)
+
 
   if(show_type){
     final <- final
@@ -189,6 +191,9 @@ week_view <- function(
   final <- final %>% arrange(
     metric = ordered(metric, levels = ordering_array)
   )
+
+  final$chart = c(rep.int(NA, nrow(final)))
+  final$chart <- spark
 
   final
 
