@@ -28,7 +28,8 @@ wmy_view_3e <- function(
   num_wks_to_show = 4,
   new_name,
   div_by_one_thousand = FALSE,
-  accounting = TRUE
+  accounting = TRUE,
+  sparkline = FALSE
 ){
 
 if(missing(metric_op2)){
@@ -43,7 +44,8 @@ if(missing(metric_op2)){
       num_wks_to_show = num_wks_to_show,
       new_name = new_name,
       div_by_one_thousand = div_by_one_thousand,
-      accounting = accounting
+      accounting = accounting,
+      sparkline = sparkline
     ) -> week_res
 
     mth_view(

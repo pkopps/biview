@@ -192,8 +192,8 @@ week_view <- function(
     metric = ordered(metric, levels = ordering_array)
   )
 
-  final$chart = c(rep.int(NA, nrow(final)))
-  final$chart <- spark
+  # final$chart = c(rep.int(NA, nrow(final)))
+  # final$chart <- spark
 
   final
 

@@ -36,11 +36,6 @@ mth_view <- function(
 
   cur_yr <- max(df$yr_num)
   prev_yr <- cur_yr - 1
-  # cur_mth <- max(df$mth_num_in_yr)
-  cur_mth <- df %>% filter(yr_num == cur_yr) %>% summarise(max(mth_num_in_yr)) %>% pull()
-  prev_mth <- cur_mth - 1
-  # today <- max(df$date_value)
-  # today_prev_mth <- today - 30
 
 ###### create quosures and quosure names to use non-standardly ######
 

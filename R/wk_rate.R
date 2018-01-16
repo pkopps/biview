@@ -42,23 +42,31 @@ wk_rate <- function(
                         "rate_prev_yr_var")
   }
 
-    cur_yr_df <- df %>% filter(yr_num == cur_yr) %>%
-      group_by(yr_num, wk_num_in_yr) %>%
-      summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
-      mutate(
-        rate = round(scaler * ( (UQ(numerator)) / (UQ(denominator)) ), round),
-        type = "actual") %>%
-      filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
-      ungroup()
+  wk_array <- df %>% filter(wk_end_date >= floor_date((Sys.Date() - (7 * num_wks_to_show)), 'week')) %>%
+    pull(wk_num_in_yr) %>%
+    unique() %>%
+    as.character() %>%
+    as_factor()
 
-    prev_yr_df <- df %>% filter(yr_num == prev_yr) %>%
-      group_by(yr_num, wk_num_in_yr) %>%
-      summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
-      mutate(
-        rate = round(scaler * ( (UQ(numerator)) / (UQ(denominator)) ), round),
-        type = "actual") %>%
-      filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
-      ungroup()
+  cur_yr_df <- df %>% filter(yr_num == cur_yr) %>%
+    filter(wk_num_in_yr %in% wk_array) %>%
+    group_by(yr_num, wk_num_in_yr) %>%
+    summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
+    mutate(
+      rate = round(scaler * ( (UQ(numerator)) / (UQ(denominator)) ), round),
+      type = "actual") %>%
+    # filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
+    ungroup()
+
+  prev_yr_df <- df %>% filter(yr_num == prev_yr) %>%
+    filter(wk_num_in_yr %in% wk_array) %>%
+    group_by(yr_num, wk_num_in_yr) %>%
+    summarise_at(vars(!!numerator, !!denominator), funs(sum)) %>%
+    mutate(
+      rate = round(scaler * ( (UQ(numerator)) / (UQ(denominator)) ), round),
+      type = "actual") %>%
+    # filter(between(wk_num_in_yr, prev_wk - (num_wks_to_show - 1), prev_wk)) %>%
+    ungroup()
 
   prev_yr_var_df <-
     right_join(

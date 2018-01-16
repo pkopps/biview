@@ -61,21 +61,22 @@ wmy_rate <- function(
     scaler = scaler
   ) -> year_res_actual
 
-  yr_rate(
-    df = df,
-    numerator = !!numerator,
-    denominator = !!denominator,
-    show_type = show_type,
-    run_rate = run_rate,
-    new_name = new_name,
-    prefix = prefix,
-    suffix = suffix,
-    scaler = scaler
-  ) -> year_res_rr
+  # yr_rate(
+  #   df = df,
+  #   numerator = !!numerator,
+  #   denominator = !!denominator,
+  #   show_type = show_type,
+  #   run_rate = run_rate,
+  #   new_name = new_name,
+  #   prefix = prefix,
+  #   suffix = suffix,
+  #   scaler = scaler
+  # ) -> year_res_rr
 
   right_join(week_res, month_res, by = 'metric') %>%
-    left_join(year_res_actual, by = 'metric') %>%
-    left_join(year_res_rr, by = 'metric')
+    left_join(year_res_actual, by = 'metric')
+  # %>%
+  #   left_join(year_res_rr, by = 'metric')
 
   # left_join(week_res, year_res_actual, by = 'metric') %>% left_join(year_res_rr, by = 'metric')
 
