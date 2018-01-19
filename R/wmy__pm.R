@@ -25,7 +25,6 @@ wmy__pm <- function(
     df = df,
     numerator = !!numerator,
     denominator = !!denominator,
-    # percent_of_total = percent_of_total,
     show_type = show_type,
     num_wks_to_show = num_wks_to_show,
     new_name = new_name,

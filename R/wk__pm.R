@@ -48,12 +48,6 @@ wk__pm <- function(
     group_by(yr_num, wk_num_in_yr) %>%
     summarise_at(vars(!!numerator), funs(sum(., na.rm=TRUE)))
 
-  # dfd <- df_denominator %>%
-  #   filter(wk_eop == 1) %>%
-  #   group_by(yr_num, wk_num_in_yr) %>%
-  #   summarise_at(vars(!!denominator_bop, !!denominator_eop), funs(sum(., na.rm=TRUE))) %>%
-  #   mutate(avg_memberbase = )
-
   dfd <- df_denominator %>%
     filter(wk_bop == 1 | wk_eop == 1) %>%
     select(yr_num, wk_num_in_yr, date_value, wk_bop, wk_eop, `Members (BOP)`, `Members (EOP)`) %>%

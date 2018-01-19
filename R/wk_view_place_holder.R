@@ -2,8 +2,8 @@
 
 wk_view_place_hold <- function(df, metric_name, num_wks_to_show = 4){
 
-  wk_array <- df %>% filter(wk_end_date_value >= floor_date((Sys.Date() - (7 * num_wks_to_show)), 'week')) %>%
-    arrange(wk_end_date_value) %>%
+  wk_array <- df %>% filter(wk_end_date >= floor_date((Sys.Date() - (7 * num_wks_to_show)), 'week')) %>%
+    arrange(wk_end_date) %>%
     mutate(wk_num_in_yr = wk_num_in_yr %>% as.character() %>% as_factor()) %>%
     select(wk_num_in_yr)
 
