@@ -1,10 +1,3 @@
-# prep with sample data and libraries
-
-library(tidyverse)
-library(rlang)
-library(lubridate)
-library(glue)
-
 neg_paren <- function(x){
   ind <- grepl("-", x)
   x[ind] <-  paste0("(", sub("-", "", x[ind]), "%)")
