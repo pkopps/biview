@@ -43,6 +43,7 @@ wk_rate <- function(
   }
 
   wk_array <- df %>% filter(wk_end_date >= floor_date((Sys.Date() - (7 * num_wks_to_show)), 'week')) %>%
+    filter(wk_end_date <= floor_date((Sys.Date() - (7)), 'week')) %>%
     pull(wk_num_in_yr) %>%
     unique() %>%
     as.character() %>%
@@ -78,12 +79,13 @@ wk_rate <- function(
     mutate(rate_prev_yr_var = round( (rate_cur_yr - rate_prev_yr) , 2) ) ## "3 ppts"
 
   prev_yr_var_df <- prev_yr_var_df %>%
-    mutate(wk_num_in_yr = paste0("w", wk_num_in_yr),
-           rate_cur_yr = paste0(prefix, rate_cur_yr, suffix),
-           rate_prev_yr = paste0(prefix, rate_prev_yr, suffix)
-           # ,
-           # rate_prev_yr_var = paste0(prefix, rate_prev_yr_var, suffix)
-           )
+    mutate(
+      wk_num_in_yr = paste0("w", wk_num_in_yr),
+      rate_cur_yr = paste0(prefix, rate_cur_yr, suffix),
+      rate_prev_yr = paste0(prefix, rate_prev_yr, suffix)
+     # ,
+     # rate_prev_yr_var = paste0(prefix, rate_prev_yr_var, suffix)
+    )
 
   if(!missing(new_name)){
 

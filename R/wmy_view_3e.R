@@ -3,10 +3,12 @@
 #' Transform regular data into the BI view of weeks, next to months, next to years,
 #' with previous year variance, OP2, etc.
 #'
-#' @param df A data frame with date dimensions
-#' @param metric Column to be group and summate on
-#' @param df_op2 The same data frame from df or another one if OP2 data is stored in another one
-#' @param metric_op2 Corresponding OP2 column to be group and summate on
+#' @param df_wk data frame for week view
+#' @param df_mth data frame for month view
+#' @param df_yr data frame for year view
+#' @param metric Column to be group by and summate on
+#' @param df_op2 data frame for OP2
+#' @param metric_op2 OP2 column to be group by and summate on
 #' @param run_rate Should current month and year be run rate instead of actual?
 #'
 #' @return transformed data frame
@@ -18,7 +20,6 @@ wmy_view_3e <- function(
   df_wk,
   df_mth,
   df_yr,
-  # df_yr_rr,
   metric,
   df_op2,
   metric_op2,

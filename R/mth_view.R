@@ -11,7 +11,7 @@ mth_view <- function(
   metric_6p6,
   df_9p3,
   metric_9p3,
-  mth_rr = FALSE,
+  # mth_rr = FALSE,
   show_type = FALSE,
   new_name = NULL,
   div_by_one_thousand = TRUE,
@@ -20,12 +20,6 @@ mth_view <- function(
   show_full_year = TRUE,
   suffix = ""
 ) {
-
-###### message to clarify ACTUAL vs RUN RATE ######
-
-  if(mth_rr == FALSE) message(glue("Month {cur_mth} (current month) value is ACTUAL")) else message(glue("Month {cur_mth} (current month) value is RUN RATE"))
-
-###
 
 ###### Error messaging ######
 
@@ -123,9 +117,31 @@ if(!missing(metric_9p3)){
 
 ###### opt in to replace actual measures for run rate here ######
 
-if(mth_rr == TRUE){
+  #********** RR done in CARI, deprecated *************#
 
-  rr <- mth_rr(df = df, metric = !!metric)
+# if(mth_rr == TRUE){
+#
+#   rr <- mth_rr(df = df, metric = !!metric)
+#
+#   df <- df %>%
+#     group_by(yr_num, mth_num_in_yr) %>% # group by year and month
+#     summarise_at(vars(!!metric), funs(round_sum)) %>% # get sum of metric per year and month
+#     mutate(type = "actual") %>% # create column indicating these are actuals
+#     ungroup()
+#
+#   cur_yr_df <- df %>%
+#     filter(yr_num == cur_yr) %>%
+#     filter(mth_num_in_yr != cur_mth ) %>%
+#     bind_rows(rr) %>%
+#     select(-yr_num) %>%
+#     rename(!!metric_cur_yr_name := UQ(metric_name))
+#
+#   prev_yr_df <- df %>%
+#     filter(yr_num == prev_yr) %>%
+#     select(-yr_num, -type) %>%
+#     rename(!!metric_prev_yr_name := UQ(metric_name))
+#
+# }else{
 
   df <- df %>%
     group_by(yr_num, mth_num_in_yr) %>% # group by year and month
@@ -135,8 +151,6 @@ if(mth_rr == TRUE){
 
   cur_yr_df <- df %>%
     filter(yr_num == cur_yr) %>%
-    filter(mth_num_in_yr != cur_mth ) %>%
-    bind_rows(rr) %>%
     select(-yr_num) %>%
     rename(!!metric_cur_yr_name := UQ(metric_name))
 
@@ -145,25 +159,7 @@ if(mth_rr == TRUE){
     select(-yr_num, -type) %>%
     rename(!!metric_prev_yr_name := UQ(metric_name))
 
-}else{
-
-  df <- df %>%
-    group_by(yr_num, mth_num_in_yr) %>% # group by year and month
-    summarise_at(vars(!!metric), funs(round_sum)) %>% # get sum of metric per year and month
-    mutate(type = "actual") %>% # create column indicating these are actuals
-    ungroup()
-
-  cur_yr_df <- df %>%
-    filter(yr_num == cur_yr) %>%
-    select(-yr_num) %>%
-    rename(!!metric_cur_yr_name := UQ(metric_name))
-
-  prev_yr_df <- df %>%
-    filter(yr_num == prev_yr) %>%
-    select(-yr_num, -type) %>%
-    rename(!!metric_prev_yr_name := UQ(metric_name))
-
-}
+# }
 
 ###
 
