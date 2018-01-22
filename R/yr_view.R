@@ -5,11 +5,11 @@ yr_view <- function(
   metric,
   df_op2,
   metric_op2,
-  show_type = FALSE,
+  type = FALSE,
   new_name = NULL,
   yr_rr = FALSE,
   rate = FALSE,
-  div_by_one_thousand = TRUE,
+  div_by_one_thousand = FALSE,
   accounting = TRUE,
   suffix = ""
   # ,
@@ -17,15 +17,6 @@ yr_view <- function(
   # ,
   # sparkline = FALSE
   ) {
-
-  ###### message to clarify ACTUAL vs RUN RATE ######
-
-  if(yr_rr == FALSE){
-    message(glue("Year {cur_yr} (current year) value is ACTUAL"))
-  }
-  else{
-    message(glue("Year {cur_yr} (current year) value is RUN RATE"))
-  }
 
   ###
 
@@ -226,7 +217,7 @@ if(!missing(metric_op2)){
       rename(`Full Year` = value)
   }
 
-  if(show_type){
+  if(type){
     final <- final
   }
   else{

@@ -12,6 +12,7 @@
 #' @param run_rate Should current month and year be run rate instead of actual?
 #'
 #' @return transformed data frame
+#'
 #' @examples
 #'
 #'
@@ -25,7 +26,7 @@ wmy_view_3e <- function(
   metric_op2,
   mth_rr = FALSE,
   yr_rr = TRUE,
-  show_type = FALSE,
+  type = FALSE,
   num_wks_to_show = 4,
   new_name,
   div_by_one_thousand = FALSE,
@@ -41,7 +42,7 @@ if(missing(metric_op2)){
     week_view(
       df = df_wk,
       metric = !!metric,
-      show_type = show_type,
+      type = type,
       num_wks_to_show = num_wks_to_show,
       new_name = new_name,
       div_by_one_thousand = div_by_one_thousand,
@@ -54,8 +55,8 @@ if(missing(metric_op2)){
       metric = !!metric,
       # df_op2 = df_op2,
       # metric_op2 = !!metric_op2,
-      mth_rr = mth_rr,
-      show_type = show_type,
+      # mth_rr = mth_rr,
+      type = type,
       new_name = new_name,
       div_by_one_thousand = div_by_one_thousand,
       accounting = accounting
@@ -66,7 +67,7 @@ if(missing(metric_op2)){
       metric = !!metric,
       # df_op2 = df_op2,
       # metric_op2 = !!metric_op2,
-      show_type = show_type,
+      type = type,
       new_name = new_name,
       yr_rr = FALSE
     ) -> year_res_actual
@@ -86,7 +87,7 @@ else if(!missing(metric_op2)){
   week_view(
     df = df_wk,
     metric = !!metric,
-    show_type = show_type,
+    type = type,
     num_wks_to_show = num_wks_to_show,
     new_name = new_name,
     div_by_one_thousand = div_by_one_thousand,
@@ -98,19 +99,19 @@ else if(!missing(metric_op2)){
     metric = !!metric,
     df_op2 = df_op2,
     metric_op2 = !!metric_op2,
-    mth_rr = mth_rr,
-    show_type = show_type,
+    # mth_rr = mth_rr,
+    type = type,
     new_name = new_name,
     div_by_one_thousand = div_by_one_thousand,
     accounting = accounting
   ) -> month_res
 
   yr_view(
-    df = df_yr_rr,
+    df = df_yr,
     metric = !!metric,
     df_op2 = df_op2,
     metric_op2 = !!metric_op2,
-    show_type = show_type,
+    type = type,
     new_name = new_name,
     yr_rr = FALSE
   ) -> year_res_actual

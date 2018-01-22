@@ -1,6 +1,6 @@
 neg_paren <- function(x){
   ind <- grepl("-", x)
-  x[ind] <-  paste0("(", sub("-", "", x[ind]), "%)")
+  x[ind] <-  paste0("(", sub("-", "", x[ind]), ")")
   x
 }
 
@@ -66,12 +66,14 @@ dimensions <- c("date_value",
 # sample_data <- read_csv("sample_data.csv")
 
 # op2 is at monthly grain
-# sample_goals <- data.frame(yr_num = 2017,
+# goals <- data.frame(yr_num = 2018,
 #                   mth_num_in_yr = 1:12,
 #                   revenue_op2 = 1555000,
 #                   trials_op2 = 17000,
 #                   converts_op2 = 12000,
 #                   revenue_per_member_op2 = .05)
+#
+# devtools::use_data(goals, goals, overwrite = TRUE)
 
 # sample_goals %>% write_csv("sample_budget_data.csv")
 

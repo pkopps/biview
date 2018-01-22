@@ -12,12 +12,12 @@ mth_view <- function(
   df_9p3,
   metric_9p3,
   # mth_rr = FALSE,
-  show_type = FALSE,
+  type = FALSE,
   new_name = NULL,
   div_by_one_thousand = TRUE,
   accounting = TRUE,
   rate = FALSE,
-  show_full_year = TRUE,
+  full_year = TRUE,
   suffix = ""
 ) {
 
@@ -176,11 +176,13 @@ if(!missing(metric_op2)){
       by = c("mth_num_in_yr")
       ) %>%
     mutate(
-      !!metric_op2_var_name := round(
-      100 * ( (UQ(metric_cur_yr_name)) - (!!metric_op2) )
-      /
-      (UQ(metric_cur_yr_name)), # denominator
-      2)
+      !!metric_op2_var_name :=
+        paste0(
+          round(100 * ( (UQ(metric_cur_yr_name)) - (!!metric_op2) )
+          /
+          (UQ(metric_cur_yr_name)), # denominator
+          2),
+        "%")
     )
 
 }
@@ -232,7 +234,11 @@ if(rate == TRUE){
     suffix = c("_cur_yr", "_prev_yr")) %>%
     mutate(
       !!metric_prev_yr_var_name :=
-        round( ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) ), 2 )
+        paste0(
+          round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
+               /
+                 (UQ(metric_prev_yr_name)), 2 )
+          , "%")
     ) %>%
     ungroup()
 
@@ -245,9 +251,11 @@ final <- right_join(
   suffix = c("_cur_yr", "_prev_yr")) %>%
   mutate(
     !!metric_prev_yr_var_name :=
-      round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
-             /
-               (UQ(metric_prev_yr_name)), 2 )
+      paste0(
+        round( 100 * ( (UQ(metric_cur_yr_name)) - (UQ(metric_prev_yr_name)) )
+               /
+                 (UQ(metric_prev_yr_name)), 2 )
+        , "%")
   ) %>%
   ungroup()
 
@@ -267,16 +275,16 @@ if(accounting){
     mutate_at(
       vars(
         !!metric_cur_yr_name,
-        !!metric_prev_yr_name
-        # ,
+        !!metric_prev_yr_name,
         # !!metric_prev_yr_var_name ### BUG, won't wrap negative numbers in parenthesis
+        !!metric_op2_name
       ),
       funs(prettyNum(., big.mark = ","))
     )
 
   final <- final %>%
     mutate_at(
-      vars(!!metric_prev_yr_var_name),
+      vars(!!metric_prev_yr_var_name, !!metric_op2_var_name),
       funs(neg_paren)
     )
 }
@@ -314,7 +322,7 @@ if(!missing(new_name) & missing(metric_op2)){
 
 ###### opt in to hiding type row, predominantly for reporting ######
 
-if(show_type){
+if(type){
   final <- final
   }
 else{
