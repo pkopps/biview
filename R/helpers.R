@@ -43,19 +43,24 @@ dimensions <- c("date_value",
                 "mth_num_in_yr",
                 "wk_num_in_yr")
 
-# sample_data <- data.frame(
+# performance <- data.frame(
+#   company_name = "Dunder Mifflin",
 #   marketplace_short_name = "US",
 #   date_value = date_seq,
-#   yr_num = year(date_seq),
+#   yr_num = epiyear(date_seq),
 #   mth_num_in_yr = lubridate::month(date_seq),
 #   mth_name = lubridate::month(date_seq, label = TRUE),
-#   wk_num_in_yr = week(date_seq),
+#   wk_num_in_yr = epiweek(date_seq),
 #   wk_start_date = floor_date(date_seq, unit = 'weeks'),
+#   wk_end_date = ceiling_date(date_seq, unit = 'weeks'),
 #   revenue = rnorm(n = length(date_seq), mean = 500000, sd = 3582),
 #   trials = round(rnorm(n = length(date_seq), mean = 500, sd = 35), 0),
 #   converts = round(rnorm(n = length(date_seq), mean = 100, sd = 35), 0),
 #   members = round(rnorm(n = length(date_seq), mean = 1000000, sd = 35), 0) # TOFIX (INCREASING)
-#   )
+# )
+#
+# devtools::use_data(performance, performance, overwrite = TRUE)
+
 #
 # sample_data %>% write_csv("sample_data.csv")
 # sample_data <- read_csv("sample_data.csv")
