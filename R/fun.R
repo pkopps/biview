@@ -12,10 +12,13 @@ fun <- function(
   metric_9p3,
   full_yr = FALSE,
   full_yr_rate = FALSE,
-  new_name = NULL
+  new_name = NULL,
+  accounting = FALSE,
+  div_by_1000 = TRUE
 ){
 
   # throw error if missing args
+  if(missing(df)) stop("'df' is missing")
   if(missing(grouping)) stop("'grouping' is missing")
 
   # 'enquo' args for !!/!!!
@@ -29,10 +32,12 @@ fun <- function(
       filter(wk_end_date >= ceiling_date( ( Sys.Date() - (7 * 5) ) ) ) %>%
       select(wk_num_in_yr) %>%
       pull() %>% unique()
-    # %>% factor(., levels = .)
   }
 
   # group and summarize, if week grouping, bring wk_end_date to order by (ie: w51, w52, w1, w2)
+  # *** if df is already grouped and summarised, this function will simply spit the same data frame back out,
+  #     making this function able to consume both daily gain data as well as already grouped and summarised data
+
   if(grouping == "~wk_num_in_yr"){
     df <- df %>% group_by(yr_num, !!grouping) %>%
       summarise_at(vars(!!metric), funs(sum)) %>%
@@ -69,23 +74,26 @@ fun <- function(
       )
   }
 
-  # calculate previous year variance
-  df <- df %>%
-    mutate(
-      prev_yr_var = ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) # previous year variance
-    )
-
-  # if goal(op2) is provided, join it and calculate current year vs goal variance
+  # if goal(op2) is provided, join it
   if(!missing(df_goal)){
-    df_goal <- df_goal %>% select(!!grouping, !!metric_goal, -yr_num) %>% rename(metric_goal = !!metric_goal)
+    if(grouping == "~mth_num_in_yr"){
+      df_goal <- df_goal %>%
+        select(!!grouping, !!metric_goal, -yr_num) %>%
+        rename(metric_goal = !!metric_goal)
+    }else if(grouping == "~yr_num"){ # if grouping is yr, group and summate the goal for the year
+      df_goal <- df_goal %>%
+        select(!!grouping, !!metric_goal, yr_num) %>%
+        group_by(yr_num) %>%
+        summarise_at(vars(!!metric_goal), funs(sum)) %>%
+        rename(metric_goal = !!metric_goal)
+    }
+
     df <-
       left_join(
         df,
         df_goal
       ) %>%
-      mutate(
-        goal_var = ( ( metric_cur_yr - metric_goal ) / metric_goal ) # goal variance
-      )
+      mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) )
   }
 
   # if 3+9 is provided, join it
@@ -133,28 +141,90 @@ fun <- function(
         mutate(metric_cur_yr = if_else(is.na(metric_cur_yr), metric_3p9, metric_cur_yr)) %>%
         select(-metric_3p9)
     }else if(!missing(df_goal)){ # OP2
-      df <- df %>% mutate(metric_cur_yr = if_else(is.na(metric_cur_yr), metric_goal, metric_cur_yr))
+      df <- df %>% mutate(metric_cur_yr = if_else(is.na(metric_cur_yr), metric_goal, metric_cur_yr)) %>%
+        mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) # op2 var
     }else{ # else do nothing
       NULL
     }
   }
+
+  # calculate previous year variance (could be with actuals, op2, or predictions)
+  df <- df %>%
+    mutate(
+      prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 )  # previous year variance
+    )
 
   # calculate full yr values for mth view, store in variable as df to join later: included by default
   if(full_yr){
     df_full_yr <-
       df %>% select(metric_cur_yr, metric_prev_yr, metric_goal) %>%
         summarise_all(funs(sum(., na.rm = TRUE))) %>%
-        mutate(prev_yr_var = ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) ) %>% # previous yr variance
-        mutate(goal_var = ( ( metric_cur_yr - metric_goal ) / metric_goal ) ) %>%  # goal variance
-        select(metric_cur_yr, metric_prev_yr, prev_yr_var, metric_goal, goal_var) %>% # do to enforce order
-        gather(metric, `Full Year`)
+        mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ) ) %>% # previous yr variance
+        mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) %>%  # goal variance
+        select(metric_cur_yr, metric_prev_yr, prev_yr_var, metric_goal, goal_var) # do to enforce order
+  }
+
+  # divide values by 1000
+  if(div_by_1000){
+    if(!missing(df_goal)){
+      df <- df %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(div_by_one_thousand))
+    }else{
+      df <- df %>% mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(div_by_one_thousand))
+    }
+  }
+
+  # apply accounting formatting -7437834 -> (7437834); 17000 -> 17,000
+  if(accounting){
+
+    # df
+    ## add commas (17000 -> 17,000)
+    if(grouping == "~wk_num_in_yr"){ # no goal for wk view
+      df <- df %>%
+        mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(prettyNum(., big.mark = ",")))
+    }else{
+      if(!missing(df_goal)){
+        df <- df %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(prettyNum(., big.mark = ",")))
+      }else{
+        df <- df %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(prettyNum(., big.mark = ",")))
+      }
+    }
+
+    ## wrap negative numbers in parenthesis (ie: -7 -> (7))
+    if(grouping == "~wk_num_in_yr"){ # no goal var for wk view
+      df <- df %>%
+        mutate_at(
+          vars(prev_yr_var), funs(neg_paren)) #neg_paren() in R/helpers.R
+    }else{
+      if(!missing(df_goal)){
+        df <- df %>%
+          mutate_at(
+            vars(prev_yr_var, goal_var), funs(neg_paren))
+      }else{
+        df <- df %>%
+          mutate_at(
+            vars(prev_yr_var), funs(neg_paren))
+      }
+    }
+
+    #df_full_yr
+    if(full_yr){
+      df_full_yr <- df_full_yr %>%
+        mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(prettyNum(., big.mark = ",")))
+
+      df_full_yr <- df_full_yr %>%
+        mutate_at(
+          vars(prev_yr_var, goal_var), funs(neg_paren))
+    }
+
   }
 
   # define order for metrics to display in output
   ordering_array = c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var', 'metric_goal', 'goal_var')
 
   # transform from long to wide/horizontal view
-  if(grouping == '~wk_num_in_yr'){
+  if(grouping == '~wk_num_in_yr'){ # wk
     df <- df %>%
       gather(metric, value, -!!grouping) %>%
       spread(!!grouping, value) %>%
@@ -162,7 +232,7 @@ fun <- function(
         metric = ordered(metric, levels = ordering_array)
       ) %>%
       select(c("metric", wk_nums)) # orders the columns so the wks are chronological (ie: 51 52 1 2)
-  }else{
+  }else{ # mth & yr
     df <- df %>%
       gather(metric, value, -!!grouping) %>%
       spread(!!grouping, value) %>%
@@ -173,10 +243,10 @@ fun <- function(
 
   # join df_full_yr to mth data
   if(full_yr){
-    df <- left_join(df, df_full_yr)
+    df <- left_join(df, df_full_yr %>% gather(metric, `Full Year`))
   }
 
-  # if new name if provided, rename metric labels with respect to if goal(op2) is provided
+  # if new name is provided, rename metric labels with respect to if goal (op2) is provided
     if(!is.null(new_name)){
       if(!missing(df_goal)){
         df <- df %>% mutate(
@@ -189,12 +259,12 @@ fun <- function(
     )
   }
 
-  # if yr grouping rename column name from current year number to 'YTD'
+  # if yr grouping, rename column name from current year number to 'YTD' (ie: `2018` -> `YTD`)
   if(grouping == "~yr_num"){
     names(df) = c("metric", "YTD")
   }
 
-  # output data frame
+  # return data frame
   df
 
 }
