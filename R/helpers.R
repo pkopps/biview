@@ -48,6 +48,7 @@ dimensions <- c("date_value",
 #   marketplace_short_name = "US",
 #   date_value = date_seq,
 #   yr_num = epiyear(date_seq),
+#   yr_num_2 = year(date_seq),
 #   mth_num_in_yr = lubridate::month(date_seq),
 #   mth_name = lubridate::month(date_seq, label = TRUE),
 #   wk_num_in_yr = epiweek(date_seq),
@@ -58,7 +59,7 @@ dimensions <- c("date_value",
 #   converts = round(rnorm(n = length(date_seq), mean = 100, sd = 35), 0),
 #   members = round(rnorm(n = length(date_seq), mean = 1000000, sd = 35), 0) # TOFIX (INCREASING)
 # )
-#
+
 # devtools::use_data(performance, performance, overwrite = TRUE)
 
 #
