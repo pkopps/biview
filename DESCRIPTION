@@ -15,12 +15,16 @@ Imports:
     tidyr,
     lubridate,
     glue,
-    rlang
+    rlang,
+    forcats,
+    sparkline
 Depends:
     dplyr,
     tidyr,
     lubridate,
     glue,
-    rlang
+    rlang,
+    forcats,
+    sparkline
 Suggests: 
     testthat

@@ -14,7 +14,11 @@ fun <- function(
   full_yr_rate = FALSE,
   new_name = NULL,
   accounting = FALSE,
-  div_by_1000 = TRUE
+  div_by_1000 = TRUE,
+  prefix = "",
+  suffix = "",
+  spark = FALSE,
+  pop = TRUE
 ){
 
   # throw error if missing args
@@ -152,9 +156,10 @@ fun <- function(
   df <- df %>%
     mutate(
       prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 )  # previous year variance
-    )
+    ) %>%
+    arrange(!!grouping)
 
-  # calculate full yr values for mth view, store in variable as df to join later: included by default
+  # calculate full yr values for mth view, store in variable as dataframe to join later: included by default
   if(full_yr){
     df_full_yr <-
       df %>% select(metric_cur_yr, metric_prev_yr, metric_goal) %>%
@@ -171,6 +176,36 @@ fun <- function(
     }else{
       df <- df %>% mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(div_by_one_thousand))
     }
+  }
+
+  #sparkline # TODO, enforce order of wks and mnths and DEBUG yr
+  if(spark){
+    spark_df <- tibble(
+      metric = c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var'),
+      chart = c(
+        df %>% pull(metric_cur_yr) %>% spk_chr(type='line'),
+        df %>% pull(metric_prev_yr) %>% spk_chr(type='line'),
+        df %>% pull(prev_yr_var) %>% spk_chr(type='line')
+      )
+    )
+  }
+
+  #pop (Period over Period change)
+  if(pop){
+    df <- df %>%
+      mutate(
+        metric_cur_yr_pop = round ( ( ( ( metric_cur_yr - lag(metric_cur_yr) ) / lag(metric_cur_yr) ) * 100 ), 2 ),
+        metric_prev_yr_pop = round ( ( ( ( metric_prev_yr - lag(metric_prev_yr) ) / lag(metric_prev_yr) ) * 100 ), 2 )
+      ) %>%
+      mutate(
+        metric_cur_yr_pop = paste0(metric_cur_yr_pop,"%"),
+        metric_prev_yr_pop = paste0(metric_prev_yr_pop,"%")
+      ) %>%
+      mutate(
+        metric_cur_yr = paste(metric_cur_yr, metric_cur_yr_pop, sep = " | "),
+        metric_prev_yr = paste(metric_prev_yr, metric_prev_yr_pop, sep = " | ")
+      ) %>%
+      select(-metric_cur_yr_pop, -metric_prev_yr_pop)
   }
 
   # apply accounting formatting -7437834 -> (7437834); 17000 -> 17,000
@@ -220,10 +255,17 @@ fun <- function(
 
   }
 
+  # add prefix and suffix
+  df <- df %>%
+    mutate(
+      metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
+      metric_prev_yr = paste0(prefix, metric_prev_yr, suffix)
+    )
+
   # define order for metrics to display in output
   ordering_array = c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var', 'metric_goal', 'goal_var')
 
-  # transform from long to wide/horizontal view
+  #### transform from long to wide/horizontal view ####
   if(grouping == '~wk_num_in_yr'){ # wk
     df <- df %>%
       gather(metric, value, -!!grouping) %>%
@@ -231,7 +273,7 @@ fun <- function(
       arrange(
         metric = ordered(metric, levels = ordering_array)
       ) %>%
-      select(c("metric", wk_nums)) # orders the columns so the wks are chronological (ie: 51 52 1 2)
+      select(c("metric", wk_nums)) # orders the columns so the wks are chronological (ie: 51 52 1 2), else they will display (1 2 51 52)
   }else{ # mth & yr
     df <- df %>%
       gather(metric, value, -!!grouping) %>%
@@ -244,6 +286,11 @@ fun <- function(
   # join df_full_yr to mth data
   if(full_yr){
     df <- left_join(df, df_full_yr %>% gather(metric, `Full Year`))
+  }
+
+  # join spark chart
+  if(spark){
+    df <- left_join(df, spark_df)
   }
 
   # if new name is provided, rename metric labels with respect to if goal (op2) is provided
