@@ -56,10 +56,12 @@ dimensions <- c("date_value",
 #   wk_end_date = ceiling_date(date_seq, unit = 'weeks'),
 #   revenue = rnorm(n = length(date_seq), mean = 500000, sd = 3582),
 #   trials = round(rnorm(n = length(date_seq), mean = 500, sd = 35), 0),
-#   converts = round(rnorm(n = length(date_seq), mean = 100, sd = 35), 0),
-#   members = round(rnorm(n = length(date_seq), mean = 1000000, sd = 35), 0) # TOFIX (INCREASING)
-# )
-
+#   converts = round(rnorm(n = length(date_seq), mean = 100, sd = 35), 0)
+# ) %>% group_by(marketplace_short_name) %>%
+#   mutate(members = cumsum(converts))
+#
+# View(performance)
+#
 # devtools::use_data(performance, performance, overwrite = TRUE)
 
 #

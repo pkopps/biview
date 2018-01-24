@@ -18,7 +18,7 @@ fun <- function(
   prefix = "",
   suffix = "",
   spark = FALSE,
-  pop = TRUE
+  pop = FALSE
 ){
 
   # throw error if missing args
@@ -61,7 +61,7 @@ fun <- function(
   }
 
   # join current year and previous year together
-  if(grouping == "~wk_num_in_yr"){ # ***function will join wk_num_in_yr with wk_end_date strangely if you leave by argument empty
+  if(grouping == "~wk_num_in_yr"){ # ***function will join wk_num_in_yr with wk_end_date strangely if you leave `by` argument empty
     df <-
       full_join(
         cur_yr_df,
@@ -153,20 +153,36 @@ fun <- function(
   }
 
   # calculate previous year variance (could be with actuals, op2, or predictions)
-  df <- df %>%
-    mutate(
-      prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 )  # previous year variance
-    ) %>%
-    arrange(!!grouping)
+  if(suffix == "%"){
+    df <- df %>%
+      mutate(
+        prev_yr_var = round ( ( metric_cur_yr - metric_prev_yr ), 2 )  # previous year variance
+      ) %>%
+      arrange(!!grouping)
+  }else{
+    df <- df %>%
+      mutate(
+        prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 )  # previous year variance
+      ) %>%
+      arrange(!!grouping)
+  }
 
   # calculate full yr values for mth view, store in variable as dataframe to join later: included by default
   if(full_yr){
-    df_full_yr <-
-      df %>% select(metric_cur_yr, metric_prev_yr, metric_goal) %>%
+    if(!missing(df_goal)){
+      df_full_yr <-
+        df %>% select(metric_cur_yr, metric_prev_yr, metric_goal) %>%
+          summarise_all(funs(sum(., na.rm = TRUE))) %>%
+          mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ) ) %>% # previous yr variance
+          mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) %>%  # goal variance
+          select(metric_cur_yr, metric_prev_yr, prev_yr_var, metric_goal, goal_var) # do select to enforce order
+    }else{
+      df_full_yr <-
+        df %>% select(metric_cur_yr, metric_prev_yr) %>%
         summarise_all(funs(sum(., na.rm = TRUE))) %>%
         mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ) ) %>% # previous yr variance
-        mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) %>%  # goal variance
-        select(metric_cur_yr, metric_prev_yr, prev_yr_var, metric_goal, goal_var) # do to enforce order
+        select(metric_cur_yr, metric_prev_yr, prev_yr_var) # do select to enforce order
+    }
   }
 
   # divide values by 1000
@@ -178,7 +194,7 @@ fun <- function(
     }
   }
 
-  #sparkline # TODO, enforce order of wks and mnths and DEBUG yr
+  #sparkline # TODO, enforce order of wks <- NOTDONE and mnths <- DONE and DEBUG yr
   if(spark){
     spark_df <- tibble(
       metric = c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var'),
@@ -207,6 +223,32 @@ fun <- function(
       ) %>%
       select(-metric_cur_yr_pop, -metric_prev_yr_pop)
   }
+
+  # add prefix and suffix
+  df <- df %>%
+    mutate(
+      metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
+      metric_prev_yr = paste0(prefix, metric_prev_yr, suffix)
+    )
+
+  if(grouping == "~mth_num_in_yr"){
+    if(full_yr == TRUE){
+
+      df_full_yr <- df_full_yr %>%
+        mutate(
+          metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
+          metric_prev_yr = paste0(prefix, metric_prev_yr, suffix)
+        )
+    }
+
+  }
+
+  if(suffix == "%"){
+    df <- df %>% mutate(prev_yr_var = paste0(prev_yr_var, " ppts"))
+  }else{
+    df <- df %>% mutate(prev_yr_var = paste0(prev_yr_var, "%"))
+  }
+  # END add prefix and suffix
 
   # apply accounting formatting -7437834 -> (7437834); 17000 -> 17,000
   if(accounting){
@@ -245,28 +287,35 @@ fun <- function(
 
     #df_full_yr
     if(full_yr){
-      df_full_yr <- df_full_yr %>%
-        mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(prettyNum(., big.mark = ",")))
+      if(!missing(df_goal)){
 
-      df_full_yr <- df_full_yr %>%
-        mutate_at(
-          vars(prev_yr_var, goal_var), funs(neg_paren))
+        df_full_yr <- df_full_yr %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(prettyNum(., big.mark = ",")))
+
+        df_full_yr <- df_full_yr %>%
+          mutate_at(
+            vars(prev_yr_var, goal_var), funs(neg_paren))
+
+      }else{
+
+        df_full_yr <- df_full_yr %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(prettyNum(., big.mark = ",")))
+
+        df_full_yr <- df_full_yr %>%
+          mutate_at(
+            vars(prev_yr_var), funs(neg_paren))
+
+      }
     }
 
   }
-
-  # add prefix and suffix
-  df <- df %>%
-    mutate(
-      metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
-      metric_prev_yr = paste0(prefix, metric_prev_yr, suffix)
-    )
 
   # define order for metrics to display in output
   ordering_array = c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var', 'metric_goal', 'goal_var')
 
   #### transform from long to wide/horizontal view ####
   if(grouping == '~wk_num_in_yr'){ # wk
+
     df <- df %>%
       gather(metric, value, -!!grouping) %>%
       spread(!!grouping, value) %>%
@@ -274,6 +323,10 @@ fun <- function(
         metric = ordered(metric, levels = ordering_array)
       ) %>%
       select(c("metric", wk_nums)) # orders the columns so the wks are chronological (ie: 51 52 1 2), else they will display (1 2 51 52)
+
+    # add 'w' to week column names
+    names(df) <- c('metric', paste0("w",wk_nums))
+
   }else{ # mth & yr
     df <- df %>%
       gather(metric, value, -!!grouping) %>%
