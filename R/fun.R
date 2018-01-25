@@ -74,6 +74,8 @@ fun <- function(
   grouping <- enquo(grouping)
   metric_goal <- enquo(metric_goal)
 
+  print(df)
+
   # get relevant wk numbers
   if(grouping == "~wk_num_in_yr"){
     wk_nums <- df %>%
