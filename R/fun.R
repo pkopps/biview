@@ -1,3 +1,40 @@
+#' Depended on by wmy_1e & wmy_3e. Transform regular long data into BI horizontal wk, mth, and yr, views with current yr, previous yr, previous yr variance, etc.
+#'
+#' @param df data frame containing metric
+#' @param metric column name from df
+#' @param grouping time diminesion column name (wk_num_in_yr, mth_num_in_yr, yr_num)
+#' @param df_goal data frame containing metric goal
+#' @param metric_goal column name from df_goal
+#' @param df_3p9 data frame containing metric prediction
+#' @param metric_3p9 column name from df_3p9
+#' @param df_6p6 data frame containing metric prediction
+#' @param metric_6p6 column name from df_6p6
+#' @param df_9p3 data frame containing metric prediction
+#' @param metric_9p3 column name from df_9p3
+#' @param full_yr logical. Inlcude full year summation column for month view
+#' @param full_yr_rate TODO
+#' @param new_name name for metric output. Also creates new labels for previous year, previous year variance, etc.
+#' @param accounting format values as accountants do. ie: 1234000 -> 1,234,000 & -3000 -> (3000)
+#' @param div_by_1000 also an accounting practice; divide all value by 1000. ie: 1234000 -> 1234.00
+#' @param prefix add prefix to values. ie: 2000 -> $2000
+#' @param suffix add suffix to values. ie: 20.54 -> 20.54%
+#' @param spark logical. should a spark chart be added as a column in the output
+#' @param pop logical. stands for Period over Period. Include percent change from previous period (ie: week 4 to week 5) next to value
+#'
+#' @return data frame
+#'
+#' @examples
+#'fun(
+#' performance,
+#' revenue,
+#' wk_num_in_yr,
+#` new_name = "Revenue",
+#` accounting = TRUE,
+#` div_by_1000 = FALSE,
+#` full_yr = FALSE,
+#` prefix = "$"
+#` )
+#`
 fun <- function(
   df,
   metric,
@@ -21,9 +58,16 @@ fun <- function(
   pop = FALSE
 ){
 
-  # throw error if missing args
+  # errors/messaging
+  ## if missing args
   if(missing(df)) stop("'df' is missing")
   if(missing(grouping)) stop("'grouping' is missing")
+
+  ## if illegal value
+  # if(!(grouping %in% c('wk_num_in_yr', 'mth_num_in_yr', 'yr_num'))) stop("grouping value must be: 'wk_num_in_yr', 'mth_num_in_yr' or, 'yr_num'")
+
+  ## conflicting argument values warnings
+  if(suffix == "%" & div_by_1000 == TRUE) warning("Divide percentage by 1000? Are you sure?")
 
   # 'enquo' args for !!/!!!
   metric <- enquo(metric)
@@ -44,11 +88,11 @@ fun <- function(
 
   if(grouping == "~wk_num_in_yr"){
     df <- df %>% group_by(yr_num, !!grouping) %>%
-      summarise_at(vars(!!metric), funs(sum)) %>%
+      summarise_at(vars(!!metric), funs(round_sum)) %>%
       filter(wk_num_in_yr %in% wk_nums)
   }else{
     df <- df %>% group_by(yr_num, !!grouping) %>%
-      summarise_at(vars(!!metric), funs(sum))
+      summarise_at(vars(!!metric), funs(round_sum))
   }
 
   # split data into current year and previous year
@@ -98,7 +142,7 @@ fun <- function(
         df_goal
       ) %>%
       mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) )
-  }
+  } # END if goal(op2) is provided, join it
 
   # if 3+9 is provided, join it
   if(!missing(df_3p9)){

@@ -1,3 +1,9 @@
+formattable_spark <- function(x){
+  x %>% formattable() %>%
+    formattable::as.htmlwidget() %>%
+    spk_add_deps()
+}
+
 neg_paren <- function(x){
   ind <- grepl("-", x)
   x[ind] <-  paste0("(", sub("-", "", x[ind]), ")")
@@ -58,11 +64,13 @@ dimensions <- c("date_value",
 #   trials = round(rnorm(n = length(date_seq), mean = 500, sd = 35), 0),
 #   converts = round(rnorm(n = length(date_seq), mean = 100, sd = 35), 0)
 # ) %>% group_by(marketplace_short_name) %>%
-#   mutate(members = cumsum(converts))
+#   mutate(members = cumsum(converts)) %>%
+#   ungroup()
 #
 # View(performance)
 #
 # devtools::use_data(performance, performance, overwrite = TRUE)
+# readr::write_csv(performance, "data/performance.csv")
 
 #
 # sample_data %>% write_csv("sample_data.csv")
