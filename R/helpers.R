@@ -4,13 +4,13 @@ formattable_spark <- function(x){
     spk_add_deps()
 }
 
-neg_paren <- function(x){
+neg_paren <- function(x){ # function for changing negative value format; ie: -156 -> (156)
   ind <- grepl("-", x)
   x[ind] <-  paste0("(", sub("-", "", x[ind]), ")")
   x
 }
 
-div_by_one_thousand <- function(x){
+div_by_1000 <- function(x){
   y <- x/1000
   round(y, 2)
 }
@@ -22,8 +22,6 @@ round_sum <- function(x){
 round_to_two <- function(x){
   round(x, 2)
 }
-
-date_seq <- seq(as.Date("2017-01-01"), Sys.Date(), "day")
 
 today <- Sys.Date()
 # cur_month <- lubridate::month(Sys.Date())
@@ -49,6 +47,8 @@ dimensions <- c("date_value",
                 "mth_num_in_yr",
                 "wk_num_in_yr")
 
+# date_seq <- seq(as.Date("2017-01-01"), Sys.Date() + 100, "day")
+#
 # performance <- data.frame(
 #   company_name = "Dunder Mifflin",
 #   marketplace_short_name = "US",
@@ -67,7 +67,6 @@ dimensions <- c("date_value",
 #   mutate(members = cumsum(converts)) %>%
 #   ungroup()
 #
-# View(performance)
 #
 # devtools::use_data(performance, performance, overwrite = TRUE)
 # readr::write_csv(performance, "data/performance.csv")

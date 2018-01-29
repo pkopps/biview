@@ -3,6 +3,8 @@
 #' @param df data frame containing metric
 #' @param metric column name from df
 #' @param grouping time diminesion column name (wk_num_in_yr, mth_num_in_yr, yr_num)
+#' @param df_rr data frame containing run rate
+#' @param metric_rr column name from df_rr
 #' @param df_goal data frame containing metric goal
 #' @param metric_goal column name from df_goal
 #' @param df_3p9 data frame containing metric prediction
@@ -39,6 +41,8 @@ fun <- function(
   df,
   metric,
   grouping,
+  df_rr,
+  metric_rr,
   df_goal,
   metric_goal,
   df_3p9,
@@ -47,6 +51,7 @@ fun <- function(
   metric_6p6,
   df_9p3,
   metric_9p3,
+  weeks_back = 4,
   full_yr = FALSE,
   full_yr_rate = FALSE,
   new_name = NULL,
@@ -58,28 +63,29 @@ fun <- function(
   pop = FALSE
 ){
 
+  # 'enquo' args for !!/!!!
+  metric <- enquo(metric)
+  grouping <- enquo(grouping)
+  metric_rr <- enquo(metric_rr)
+  metric_goal <- enquo(metric_goal)
+
   # errors/messaging
   ## if missing args
   if(missing(df)) stop("'df' is missing")
   if(missing(grouping)) stop("'grouping' is missing")
 
-  ## if illegal value
-  # if(!(grouping %in% c('wk_num_in_yr', 'mth_num_in_yr', 'yr_num'))) stop("grouping value must be: 'wk_num_in_yr', 'mth_num_in_yr' or, 'yr_num'")
+  # print(grouping)
+  ## if illegal value TODEBUG
+  # if(grouping != "~wk_num_in_yr" | grouping != "~mth_num_in_yr" | grouping != "~yr_num") stop("grouping value must be: 'wk_num_in_yr', 'mth_num_in_yr' or, 'yr_num'")
 
   ## conflicting argument values warnings
   if(suffix == "%" & div_by_1000 == TRUE) warning("Divide percentage by 1000? Are you sure?")
-
-  # 'enquo' args for !!/!!!
-  metric <- enquo(metric)
-  grouping <- enquo(grouping)
-  metric_goal <- enquo(metric_goal)
-
-  print(df)
+  if(grouping == "~wk_num_in_yr" & full_yr == TRUE) stop("`full_yr` = TRUE not applicable for weekly grouping")
 
   # get relevant wk numbers
   if(grouping == "~wk_num_in_yr"){
     wk_nums <- df %>%
-      filter(wk_end_date >= ceiling_date( ( Sys.Date() - (7 * 5) ) ) ) %>%
+      filter(wk_end_date >= ceiling_date( ( max(wk_end_date) - (7 * weeks_back) ) ) ) %>% # controls weeks back to calculate metric
       select(wk_num_in_yr) %>%
       pull() %>% unique()
   }
@@ -104,6 +110,18 @@ fun <- function(
   }else{ # do not remove yr_num for join
     cur_yr_df <- df %>% filter(yr_num == max(df$yr_num)) %>% ungroup() %>% rename(metric_cur_yr = !!metric)
     prev_yr_df <- df %>% filter(yr_num == max(df$yr_num) - 1) %>% ungroup() %>% rename(metric_prev_yr = !!metric) %>% mutate(yr_num = yr_num + 1) # hack to join on current yr value
+  }
+
+  # join rr to cur_yr_df if grouping is mth_num_in_yr
+  if(grouping == "~mth_num_in_yr" & !missing(df_rr)){
+    rr_mth <- df_rr$mth_num_in_yr # store month num of run rate for message
+    df_rr <- df_rr %>% select(yr_num, mth_num_in_yr, !!metric_rr) %>%
+      rename(metric_rr = !!metric_rr)
+    cur_yr_df <- left_join(cur_yr_df, df_rr) %>%
+      select(-yr_num) %>%
+      mutate(metric_cur_yr = if_else(is.na(metric_rr), metric_cur_yr, metric_rr)) %>%
+      select(-metric_rr)
+    message(glue("Month {rr_mth} is RUN RATE")) # for visibility, echo run rate message
   }
 
   # join current year and previous year together
@@ -234,9 +252,9 @@ fun <- function(
   # divide values by 1000
   if(div_by_1000){
     if(!missing(df_goal)){
-      df <- df %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(div_by_one_thousand))
+      df <- df %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(div_by_1000))
     }else{
-      df <- df %>% mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(div_by_one_thousand))
+      df <- df %>% mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(div_by_1000))
     }
   }
 
