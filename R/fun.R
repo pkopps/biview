@@ -93,7 +93,6 @@ fun <- function(
   # group and summarize, if week grouping, bring wk_end_date to order by (ie: w51, w52, w1, w2)
   # *** if df is already grouped and summarised, this function will simply spit the same data frame back out,
   #     making this function able to consume both daily gain data as well as already grouped and summarised data
-
   if(grouping == "~wk_num_in_yr"){
     df <- df %>% group_by(yr_num, !!grouping) %>%
       summarise_at(vars(!!metric), funs(round_sum)) %>%
@@ -114,13 +113,17 @@ fun <- function(
 
   # join rr to cur_yr_df if grouping is mth_num_in_yr
   if(grouping == "~mth_num_in_yr" & !missing(df_rr)){
+
     rr_mth <- df_rr$mth_num_in_yr # store month num of run rate for message
+
     df_rr <- df_rr %>% select(yr_num, mth_num_in_yr, !!metric_rr) %>%
       rename(metric_rr = !!metric_rr)
+
     cur_yr_df <- left_join(cur_yr_df, df_rr) %>%
       select(-yr_num) %>%
       mutate(metric_cur_yr = if_else(is.na(metric_rr), metric_cur_yr, metric_rr)) %>%
       select(-metric_rr)
+
     message(glue("Month {rr_mth} is RUN RATE")) # for visibility, echo run rate message
   }
 
