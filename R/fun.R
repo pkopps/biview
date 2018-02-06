@@ -253,7 +253,6 @@ fun <- function(
         select(metric_cur_yr, metric_prev_yr, prev_yr_var) # do select to enforce order
     }
   }
-  print(df_full_yr)
 
   # divide values by 1000
   ## df
