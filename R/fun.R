@@ -253,13 +253,21 @@ fun <- function(
         select(metric_cur_yr, metric_prev_yr, prev_yr_var) # do select to enforce order
     }
   }
+  print(df_full_yr)
 
   # divide values by 1000
+  ## df
   if(div_by_1000){
     if(!missing(df_goal)){
       df <- df %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(div_by_1000))
     }else{
       df <- df %>% mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(div_by_1000))
+    }
+  }
+  ## df_full_yr
+  if(div_by_1000){
+    if(full_yr){
+      df_full_yr <- df_full_yr %>% mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(div_by_1000))
     }
   }
 
