@@ -60,7 +60,9 @@ fun <- function(
   prefix = "",
   suffix = "",
   spark = FALSE,
-  pop = FALSE
+  pop = FALSE,
+  scaler = 1,
+  op2_and_var_ph = TRUE
 ){
 
   # 'enquo' args for !!/!!!
@@ -413,17 +415,28 @@ fun <- function(
     df <- left_join(df, spark_df)
   }
 
+  #if op2_and_var_ph (op2 and variance place holder) == TRUE add placeholder lines
+  if(op2_and_var_ph == TRUE){
+    ph <- tibble(metric = c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var', 'metric_goal', 'goal_var'))
+    df <- left_join(ph, df)
+  }
+
   # if new name is provided, rename metric labels with respect to if goal (op2) is provided
-    if(!is.null(new_name)){
-      if(!missing(df_goal)){
-        df <- df %>% mutate(
-          metric = c(new_name, "Prior Year", "Variance vs. Prior Year", "OP2 Plan", "Variance vs. Plan")
-        )
-    }else(
-      df <- df %>% mutate(
-        metric = c(new_name, "Prior Year", "Variance vs. Prior Year")
-      )
-    )
+  # if(!is.null(new_name)){
+  #     if(!missing(df_goal)){
+  #       df <- df %>% mutate(
+  #         metric = c(new_name, "Prior Year", "Variance vs. Prior Year", "OP2 Plan", "Variance vs. Plan")
+  #       )
+  #   }else(
+  #     df <- df %>% mutate(
+  #       metric = c(new_name, "Prior Year", "Variance vs. Prior Year")
+  #     )
+  #   )
+  # }
+  if(!is.null(new_name)){
+    df <- df %>% mutate(
+              metric = c(new_name, "Prior Year", "Variance vs. Prior Year", "OP2 Plan", "Variance vs. Plan")
+            )
   }
 
   # if yr grouping, rename column name from current year number to 'YTD' (ie: `2018` -> `YTD`)
