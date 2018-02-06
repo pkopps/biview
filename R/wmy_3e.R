@@ -14,7 +14,7 @@ wmy_3e <- function(
   metric_6p6,
   df_9p3,
   metric_9p3,
-  full_yr = TRUE,
+  full_yr = FALSE,
   full_yr_rate = FALSE,
   new_name = NULL,
   accounting = TRUE,
