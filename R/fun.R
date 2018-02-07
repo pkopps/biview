@@ -76,7 +76,6 @@ fun <- function(
   if(missing(df)) stop("'df' is missing")
   if(missing(grouping)) stop("'grouping' is missing")
 
-  # print(grouping)
   ## if illegal value TODEBUG
   # if(grouping != "~wk_num_in_yr" | grouping != "~mth_num_in_yr" | grouping != "~yr_num") stop("grouping value must be: 'wk_num_in_yr', 'mth_num_in_yr' or, 'yr_num'")
 
@@ -87,6 +86,7 @@ fun <- function(
   # get relevant wk numbers
   if(grouping == "~wk_num_in_yr"){
     wk_nums <- df %>%
+      arrange(wk_end_date) %>%
       filter(wk_end_date >= ceiling_date( ( max(wk_end_date) - (7 * weeks_back) ) ) ) %>% # controls weeks back to calculate metric
       select(wk_num_in_yr) %>%
       pull() %>% unique()
@@ -214,7 +214,8 @@ fun <- function(
         mutate(metric_cur_yr = if_else(is.na(metric_cur_yr), metric_3p9, metric_cur_yr)) %>%
         select(-metric_3p9)
     }else if(!missing(df_goal)){ # OP2
-      df <- df %>% mutate(metric_cur_yr = if_else(is.na(metric_cur_yr), metric_goal, metric_cur_yr)) %>%
+      df <- df %>%
+        mutate(metric_cur_yr = if_else(is.na(metric_cur_yr), metric_goal, metric_cur_yr)) %>%
         mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) # op2 var
     }else{ # else do nothing
       NULL
@@ -301,24 +302,42 @@ fun <- function(
   }
 
   # add prefix and suffix
-  df <- df %>%
-    mutate(
-      metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
-      metric_prev_yr = paste0(prefix, metric_prev_yr, suffix)
-    )
+  if(!missing(df_goal)){
+    df <- df %>%
+      mutate(
+        metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
+        metric_prev_yr = paste0(prefix, metric_prev_yr, suffix),
+        metric_goal = paste0(prefix, metric_goal, suffix)
+      )
+  }else{
+    df <- df %>%
+      mutate(
+        metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
+        metric_prev_yr = paste0(prefix, metric_prev_yr, suffix)
+      )
+  }
 
   if(grouping == "~mth_num_in_yr"){
     if(full_yr == TRUE){
-
-      df_full_yr <- df_full_yr %>%
-        mutate(
-          metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
-          metric_prev_yr = paste0(prefix, metric_prev_yr, suffix)
-        )
+      if(!missing(df_goal)){
+        df_full_yr <- df_full_yr %>%
+          mutate(
+            metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
+            metric_prev_yr = paste0(prefix, metric_prev_yr, suffix),
+            metric_goal = paste0(prefix, metric_goal, suffix)
+          )
+      }else{
+        df_full_yr <- df_full_yr %>%
+          mutate(
+            metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
+            metric_prev_yr = paste0(prefix, metric_prev_yr, suffix)
+          )
+      }
     }
 
   }
 
+  # handle % vs ppts for values and rates respectively
   if(suffix == "%"){
     df <- df %>% mutate(prev_yr_var = paste0(prev_yr_var, " ppts"))
   }else{

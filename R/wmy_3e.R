@@ -14,7 +14,7 @@ wmy_3e <- function(
   metric_6p6,
   df_9p3,
   metric_9p3,
-  full_yr = FALSE,
+  full_yr = TRUE,
   full_yr_rate = FALSE,
   new_name = NULL,
   accounting = TRUE,
@@ -52,14 +52,14 @@ wmy_3e <- function(
   # month
   message("month")
 
-  if(missing(df_goal)){
+  if(!missing(df_goal)){
     m <-
       fun(
         df = df_mth,
         metric = !!metric,
         grouping = mth_num_in_yr,
-        # df_goal = df_goal,
-        # metric_goal = !!metric_goal,
+        df_goal = df_goal,
+        metric_goal = !!metric_goal,
         df_3p9 = df_3p9,
         metric_3p9 = !!metric_3p9,
         df_6p6 = df_6p6,
@@ -82,8 +82,8 @@ wmy_3e <- function(
         df = df_mth,
         metric = !!metric,
         grouping = mth_num_in_yr,
-        df_goal = df_goal,
-        metric_goal = !!metric_goal,
+        # df_goal = df_goal,
+        # metric_goal = !!metric_goal,
         df_3p9 = df_3p9,
         metric_3p9 = !!metric_3p9,
         df_6p6 = df_6p6,

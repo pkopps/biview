@@ -62,7 +62,8 @@ dimensions <- c("date_value",
 #   wk_end_date = ceiling_date(date_seq, unit = 'weeks'),
 #   revenue = rnorm(n = length(date_seq), mean = 500000, sd = 3582),
 #   trials = round(rnorm(n = length(date_seq), mean = 500, sd = 35), 0),
-#   converts = round(rnorm(n = length(date_seq), mean = 100, sd = 35), 0)
+#   converts = round(rnorm(n = length(date_seq), mean = 100, sd = 35), 0),
+#   royalties = round(rnorm(n = length(date_seq), mean = 4666, sd = 1000), 4)
 # ) %>% group_by(marketplace_short_name) %>%
 #   mutate(members = cumsum(converts)) %>%
 #   ungroup()
