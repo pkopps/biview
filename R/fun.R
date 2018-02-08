@@ -104,6 +104,12 @@ fun <- function(
       summarise_at(vars(!!metric), funs(round_sum))
   }
 
+  # this template is used for new marketplaces (like CA) that do not have at least 12 months of a year's worth of data to create a table
+  # with 1:12 (otherwise you might get 1,2,6,7,...12)
+  if(grouping == "~mth_num_in_yr"){
+    df <- mth_num_in_yr_template %>% left_join(., df)
+  }
+
   # split data into current year and previous year
   if(grouping != "~yr_num"){
     cur_yr_df <- df %>% filter(yr_num == max(df$yr_num)) %>% ungroup() %>% select(-yr_num) %>% rename(metric_cur_yr = !!metric)

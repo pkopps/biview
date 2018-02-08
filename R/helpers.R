@@ -1,3 +1,9 @@
+mth_num_in_yr_template <-
+  tibble(
+    yr_num = c(rep(year(Sys.Date()), 12), rep(year(Sys.Date()-365), 12)),
+    mth_num_in_yr = rep(1:12, 2)
+  )
+
 formattable_spark <- function(x){
   x %>% formattable() %>%
     formattable::as.htmlwidget() %>%
