@@ -14,7 +14,7 @@
 #' @param df_9p3 data frame containing metric prediction
 #' @param metric_9p3 column name from df_9p3
 #' @param full_yr logical. Inlcude full year summation column for month view
-#' @param full_yr_rate TODO
+#' @param rate logical. Adjust logic to handle full year for rates
 #' @param new_name name for metric output. Also creates new labels for previous year, previous year variance, etc.
 #' @param accounting format values as accountants do. ie: 1234000 -> 1,234,000 & -3000 -> (3000)
 #' @param div_by_1000 also an accounting practice; divide all value by 1000. ie: 1234000 -> 1234.00
@@ -53,7 +53,7 @@ fun <- function(
   metric_9p3,
   weeks_back = 4,
   full_yr = FALSE,
-  full_yr_rate = FALSE,
+  rate = FALSE,
   new_name = NULL,
   accounting = FALSE,
   div_by_1000 = TRUE,
@@ -79,9 +79,11 @@ fun <- function(
   ## if illegal value TODEBUG
   # if(grouping != "~wk_num_in_yr" | grouping != "~mth_num_in_yr" | grouping != "~yr_num") stop("grouping value must be: 'wk_num_in_yr', 'mth_num_in_yr' or, 'yr_num'")
 
-  ## conflicting argument values warnings
+  ## conflicting argument values errors/warnings
   if(suffix == "%" & div_by_1000 == TRUE) warning("Divide percentage by 1000? Are you sure?")
   if(grouping == "~wk_num_in_yr" & full_yr == TRUE) stop("`full_yr` = TRUE not applicable for weekly grouping")
+  if(grouping == "~yr_num" & full_yr == TRUE) stop("`full_yr` = TRUE not applicable for year grouping")
+
 
   # get relevant wk numbers
   if(grouping == "~wk_num_in_yr"){
@@ -90,6 +92,22 @@ fun <- function(
       filter(wk_end_date >= ceiling_date( ( max(wk_end_date) - (7 * weeks_back) ) ) ) %>% # controls weeks back to calculate metric
       select(wk_num_in_yr) %>%
       pull() %>% unique()
+  }
+
+  # get number of months for current year ONLY (previous year will always be 12) for rate = TRUE
+  if((grouping == "~mth_num_in_yr" | grouping == "~yr_num") & rate == TRUE){
+    cur_yr_mths_w_data <-
+      df %>%
+        filter(yr_num == max(yr_num)) %>%
+        group_by(mth_num_in_yr) %>%
+        summarise_at(vars(!!metric), funs(sum)) %>%
+        mutate(
+          cur_yr_mths_w_data = case_when(
+            !!metric != 0 | !is.na(!!metric) ~ 1,
+            TRUE ~ 0
+          )
+        ) %>%
+        pull() %>% sum()
   }
 
   # group and summarize, if week grouping, bring wk_end_date to order by (ie: w51, w52, w1, w2)
@@ -228,21 +246,6 @@ fun <- function(
     }
   }
 
-  # calculate previous year variance (could be with actuals, op2, or predictions)
-  if(suffix == "%"){
-    df <- df %>%
-      mutate(
-        prev_yr_var = round ( ( metric_cur_yr - metric_prev_yr ), 2 )  # previous year variance
-      ) %>%
-      arrange(!!grouping)
-  }else{
-    df <- df %>%
-      mutate(
-        prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 )  # previous year variance
-      ) %>%
-      arrange(!!grouping)
-  }
-
   # calculate full yr values for mth view, store in variable as dataframe to join later: included by default
   if(full_yr){
     if(!missing(df_goal)){
@@ -255,9 +258,47 @@ fun <- function(
     }else{
       df_full_yr <-
         df %>% select(metric_cur_yr, metric_prev_yr) %>%
-        summarise_all(funs(sum(., na.rm = TRUE))) %>%
-        mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ) ) %>% # previous yr variance
-        select(metric_cur_yr, metric_prev_yr, prev_yr_var) # do select to enforce order
+          summarise_all(funs(sum(., na.rm = TRUE))) %>%
+          mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ) ) %>% # previous yr variance
+          select(metric_cur_yr, metric_prev_yr, prev_yr_var) # do select to enforce order
+    }
+  }
+
+  # handle division for Full Year rates and YTD rates
+  if(rate){
+    if(grouping == "~yr_num"){
+      df <- df %>%
+        mutate(
+          metric_cur_yr = round((metric_cur_yr / cur_yr_mths_w_data), 2),
+          metric_prev_yr = round((metric_prev_yr / 12), 2)
+        )
+    }
+        if(full_yr){
+          df_full_yr <- df_full_yr %>%
+            mutate(
+              metric_cur_yr = round((metric_cur_yr / cur_yr_mths_w_data), 2),
+              metric_prev_yr = round((metric_prev_yr / 12), 2)
+            )
+        }
+  }
+
+  # calculate previous year variance (could be with actuals, op2, or predictions)
+  if(suffix == "%"){
+      df <- df %>%
+        mutate(prev_yr_var = round ( ( metric_cur_yr - metric_prev_yr ), 2 ) ) %>% # previous year variance
+        arrange(!!grouping)
+    if(full_yr){
+      df_full_yr <- df_full_yr %>% mutate(prev_yr_var = round ( ( metric_cur_yr - metric_prev_yr ), 2 ))
+    }
+  }else{
+      df <- df %>%
+        mutate(
+          prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 )  # previous year variance
+        ) %>%
+        arrange(!!grouping)
+    if(full_yr){
+      df_full_yr <- df_full_yr %>%
+        mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ))
     }
   }
 
@@ -308,6 +349,7 @@ fun <- function(
   }
 
   # add prefix and suffix
+  # for df
   if(!missing(df_goal)){
     df <- df %>%
       mutate(
@@ -323,6 +365,7 @@ fun <- function(
       )
   }
 
+  # for df_full_yr
   if(grouping == "~mth_num_in_yr"){
     if(full_yr == TRUE){
       if(!missing(df_goal)){
@@ -342,14 +385,21 @@ fun <- function(
     }
 
   }
+  # END add prefix and suffix
 
   # handle % vs ppts for values and rates respectively
   if(suffix == "%"){
     df <- df %>% mutate(prev_yr_var = paste0(prev_yr_var, " ppts"))
+      if(full_yr){
+        df_full_yr <- df_full_yr %>% mutate(prev_yr_var = paste0(prev_yr_var, " ppts"))
+      }
   }else{
     df <- df %>% mutate(prev_yr_var = paste0(prev_yr_var, "%"))
+      if(full_yr){
+        df_full_yr <- df_full_yr %>% mutate(prev_yr_var = paste0(prev_yr_var, "%"))
+      }
   }
-  # END add prefix and suffix
+
 
   # apply accounting formatting -7437834 -> (7437834); 17000 -> 17,000
   if(accounting){
