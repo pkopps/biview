@@ -21,6 +21,7 @@ wmy_3e <- function(
   div_by_1000 = TRUE,
   prefix = "",
   suffix = "",
+  scalar = 1,
   spark = FALSE,
   pop = FALSE
   ){
@@ -45,6 +46,7 @@ wmy_3e <- function(
       div_by_1000 = div_by_1000,
       prefix = prefix,
       suffix = suffix,
+      scalar = scalar,
       spark = spark,
       pop = pop
     )
@@ -73,6 +75,7 @@ wmy_3e <- function(
         div_by_1000 = div_by_1000,
         prefix = prefix,
         suffix = suffix,
+        scalar = scalar,
         spark = spark,
         pop = pop
       )
@@ -97,6 +100,7 @@ wmy_3e <- function(
         div_by_1000 = div_by_1000,
         prefix = prefix,
         suffix = suffix,
+        scalar = scalar,
         spark = spark,
         pop = pop
       )
@@ -124,6 +128,7 @@ wmy_3e <- function(
       div_by_1000 = div_by_1000,
       prefix = prefix,
       suffix = suffix,
+      scalar = scalar,
       spark = FALSE,
       pop = FALSE
     )

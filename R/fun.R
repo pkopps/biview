@@ -61,7 +61,7 @@ fun <- function(
   suffix = "",
   spark = FALSE,
   pop = FALSE,
-  scaler = 1,
+  scalar = 1,
   op2_and_var_ph = TRUE
 ){
 
@@ -130,11 +130,31 @@ fun <- function(
 
   # split data into current year and previous year
   if(grouping != "~yr_num"){
-    cur_yr_df <- df %>% filter(yr_num == max(df$yr_num)) %>% ungroup() %>% select(-yr_num) %>% rename(metric_cur_yr = !!metric)
-    prev_yr_df <- df %>% filter(yr_num == max(df$yr_num) - 1) %>% ungroup() %>% select(-yr_num) %>% rename(metric_prev_yr = !!metric)
+    cur_yr_df <- df %>%
+      filter(yr_num == max(df$yr_num)) %>%
+      ungroup() %>%
+      select(-yr_num) %>%
+      rename(metric_cur_yr = !!metric)
+    # %>%
+    #   mutate(metric_cur_yr = metric_cur_yr * scalar)
+    prev_yr_df <- df %>%
+      filter(yr_num == max(df$yr_num) - 1) %>%
+      ungroup() %>%
+      select(-yr_num) %>%
+      rename(metric_prev_yr = !!metric)
+    # %>%
+    #   mutate(metric_prev_yr = metric_prev_yr * scalar)
   }else{ # do not remove yr_num for join
-    cur_yr_df <- df %>% filter(yr_num == max(df$yr_num)) %>% ungroup() %>% rename(metric_cur_yr = !!metric)
-    prev_yr_df <- df %>% filter(yr_num == max(df$yr_num) - 1) %>% ungroup() %>% rename(metric_prev_yr = !!metric) %>% mutate(yr_num = yr_num + 1) # hack to join on current yr value
+    cur_yr_df <- df %>%
+      filter(yr_num == max(df$yr_num)) %>%
+      ungroup() %>%
+      rename(metric_cur_yr = !!metric)
+    prev_yr_df <- df %>%
+      filter(yr_num == max(df$yr_num) - 1) %>%
+      ungroup() %>%
+      rename(metric_prev_yr = !!metric) %>%
+      mutate(yr_num = yr_num + 1)
+
   }
 
   # join rr to cur_yr_df if grouping is mth_num_in_yr
