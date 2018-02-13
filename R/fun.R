@@ -83,7 +83,7 @@ fun <- function(
   if(suffix == "%" & div_by_1000 == TRUE) warning("Divide percentage by 1000? Are you sure?")
   if(grouping == "~wk_num_in_yr" & full_yr == TRUE) stop("`full_yr` = TRUE not applicable for weekly grouping")
   if(grouping == "~yr_num" & full_yr == TRUE) stop("`full_yr` = TRUE not applicable for year grouping")
-
+  if(grouping != "~mth_num_in_yr" & !missing(df_rr)) stop("run rate not applicable for groupings other than mth_num_in_yr")
 
   # get relevant wk numbers
   if(grouping == "~wk_num_in_yr"){
@@ -170,7 +170,8 @@ fun <- function(
       mutate(metric_cur_yr = if_else(is.na(metric_rr), metric_cur_yr, metric_rr)) %>%
       select(-metric_rr)
 
-    message(glue("Month {rr_mth} is RUN RATE")) # for visibility, echo run rate message
+    message(glue("Current Year Month {rr_mth} is RUN RATE")) # for visibility, echo run rate message
+
   }
 
   # join current year and previous year together

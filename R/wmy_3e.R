@@ -6,6 +6,8 @@ wmy_3e <- function(
   df_yr,
   metric,
   # grouping,
+  df_rr,
+  metric_rr,
   df_goal,
   metric_goal,
   df_3p9,
@@ -27,6 +29,7 @@ wmy_3e <- function(
   ){
 
   metric <- enquo(metric)
+  metric_rr <- enquo(metric_rr)
   metric_goal <- enquo(metric_goal)
   metric_3p9 <- enquo(metric_3p9)
   metric_6p6 <- enquo(metric_6p6)
@@ -60,6 +63,8 @@ wmy_3e <- function(
         df = df_mth,
         metric = !!metric,
         grouping = mth_num_in_yr,
+        df_rr = df_rr,
+        metric_rr = !!metric_rr,
         df_goal = df_goal,
         metric_goal = !!metric_goal,
         df_3p9 = df_3p9,
@@ -85,6 +90,8 @@ wmy_3e <- function(
         df = df_mth,
         metric = !!metric,
         grouping = mth_num_in_yr,
+        df_rr = df_rr,
+        metric_rr = !!metric_rr,
         # df_goal = df_goal,
         # metric_goal = !!metric_goal,
         df_3p9 = df_3p9,
@@ -136,6 +143,9 @@ wmy_3e <- function(
   # join wmy together
   message("join")
   df <- right_join(w, m, by = c('metric' = 'metric')) %>% left_join(y, by = c('metric' = 'metric'))
+  df1 <- df %>% select(YTD, `Full Year`)
+  df2 <- df %>% select(-YTD, -`Full Year`)
+  df <- cbind(df2, df1)
 
   # return df
   message("return")

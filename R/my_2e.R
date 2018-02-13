@@ -110,6 +110,9 @@ my_2e <- function(
   # join my together
   message("join")
   df <- left_join(m, y, by = c('metric' = 'metric'))
+  df1 <- df %>% select(YTD, `Full Year`)
+  df2 <- df %>% select(-YTD, -`Full Year`)
+  df <- cbind(df2, df1)
 
   # return df
   message("return")
