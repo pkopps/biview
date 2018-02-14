@@ -79,6 +79,9 @@ fun <- function(
   ## if illegal value TODEBUG
   # if(grouping != "~wk_num_in_yr" | grouping != "~mth_num_in_yr" | grouping != "~yr_num") stop("grouping value must be: 'wk_num_in_yr', 'mth_num_in_yr' or, 'yr_num'")
 
+  ## 0 record data frame
+  if(nrow(df) == 0) stop("empty data frame supplied")
+
   ## conflicting argument values errors/warnings
   if(suffix == "%" & div_by_1000 == TRUE) warning("Divide percentage by 1000? Are you sure?")
   if(grouping == "~wk_num_in_yr" & full_yr == TRUE) stop("`full_yr` = TRUE not applicable for weekly grouping")
@@ -95,20 +98,20 @@ fun <- function(
   }
 
   # get number of months for current year ONLY (previous year will always be 12) for rate = TRUE
-  if((grouping == "~mth_num_in_yr" | grouping == "~yr_num") & rate == TRUE){
-    cur_yr_mths_w_data <-
-      df %>%
-        filter(yr_num == max(yr_num)) %>%
-        group_by(mth_num_in_yr) %>%
-        summarise_at(vars(!!metric), funs(sum)) %>%
-        mutate(
-          cur_yr_mths_w_data = case_when(
-            !!metric != 0 | !is.na(!!metric) ~ 1,
-            TRUE ~ 0
-          )
-        ) %>%
-        pull() %>% sum()
-  }
+  # if((grouping == "~mth_num_in_yr" | grouping == "~yr_num") & rate == TRUE){
+  #   cur_yr_mths_w_data <-
+  #     df %>%
+  #       filter(yr_num == max(yr_num)) %>%
+  #       group_by(mth_num_in_yr) %>%
+  #       summarise_at(vars(!!metric), funs(sum)) %>%
+  #       mutate(
+  #         cur_yr_mths_w_data = case_when(
+  #           !!metric != 0 | !is.na(!!metric) ~ 1,
+  #           TRUE ~ 0
+  #         )
+  #       ) %>%
+  #       pull() %>% sum()
+  # }
 
   # group and summarize, if week grouping, bring wk_end_date to order by (ie: w51, w52, w1, w2)
   # *** if df is already grouped and summarised, this function will simply spit the same data frame back out,
@@ -267,6 +270,9 @@ fun <- function(
     }
   }
 
+  # use this to determine if goal or forecasts have been provided. If one has been, do current year full year calc, else do not
+  goal_or_forecasts_provided = !missing(df_goal) | !missing(df_3p9) | !missing(df_6p6) | !missing(df_9p3)
+
   # calculate full yr values for mth view, store in variable as dataframe to join later: included by default
   if(full_yr){
     if(!missing(df_goal)){
@@ -280,27 +286,34 @@ fun <- function(
       df_full_yr <-
         df %>% select(metric_cur_yr, metric_prev_yr) %>%
           summarise_all(funs(sum(., na.rm = TRUE))) %>%
-          mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ) ) %>% # previous yr variance
-          select(metric_cur_yr, metric_prev_yr, prev_yr_var) # do select to enforce order
+          mutate(metric_cur_yr = NA) %>%
+      # %>%
+          # mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ) ) %>% # previous yr variance
+          select(metric_cur_yr, metric_prev_yr) # do select to enforce order
     }
   }
 
-  # handle division for Full Year rates and YTD rates
-  if(rate){
-    if(grouping == "~yr_num"){
-      df <- df %>%
-        mutate(
-          metric_cur_yr = round((metric_cur_yr / cur_yr_mths_w_data), 2),
-          metric_prev_yr = round((metric_prev_yr / 12), 2)
-        )
-    }
-        if(full_yr){
-          df_full_yr <- df_full_yr %>%
-            mutate(
-              metric_cur_yr = round((metric_cur_yr / cur_yr_mths_w_data), 2),
-              metric_prev_yr = round((metric_prev_yr / 12), 2)
-            )
-        }
+################
+
+    # handle division for Full Year rates and YTD rates
+
+    # if(grouping == "~yr_num"){ ####### used only if you were to add up 12 months of rates and divide by 12*****
+    #   df <- df %>%
+    #     mutate(
+    #       metric_cur_yr = round((metric_cur_yr / 12), 2),
+    #       metric_prev_yr = round((metric_prev_yr / 12), 2)
+    #     )
+    # }
+
+###################
+
+  # divide rate full yr values (sum of monthly rates) by 12 (number of month periods)
+  if(full_yr & rate){
+    df_full_yr <- df_full_yr %>%
+      mutate(
+        metric_cur_yr = round((metric_cur_yr / 12), 2),
+        metric_prev_yr = round((metric_prev_yr / 12), 2)
+      )
   }
 
   # calculate previous year variance (could be with actuals, op2, or predictions)
