@@ -171,7 +171,7 @@ fun <- function(
     cur_yr_df <- left_join(cur_yr_df, df_rr) %>%
       select(-yr_num) %>%
       mutate(metric_cur_yr = if_else(is.na(metric_rr), metric_cur_yr, metric_rr)) %>%
-      select(-metric_rr)
+      select(-metric_rr) %>%
 
     message(glue("Current Year Month {rr_mth} is RUN RATE")) # for visibility, echo run rate message
 
