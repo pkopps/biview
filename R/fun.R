@@ -138,15 +138,11 @@ fun <- function(
       ungroup() %>%
       select(-yr_num) %>%
       rename(metric_cur_yr = !!metric)
-    # %>%
-    #   mutate(metric_cur_yr = metric_cur_yr * scalar)
     prev_yr_df <- df %>%
       filter(yr_num == max(df$yr_num) - 1) %>%
       ungroup() %>%
       select(-yr_num) %>%
       rename(metric_prev_yr = !!metric)
-    # %>%
-    #   mutate(metric_prev_yr = metric_prev_yr * scalar)
   }else{ # do not remove yr_num for join
     cur_yr_df <- df %>%
       filter(yr_num == max(df$yr_num)) %>%
@@ -157,7 +153,6 @@ fun <- function(
       ungroup() %>%
       rename(metric_prev_yr = !!metric) %>%
       mutate(yr_num = yr_num + 1)
-
   }
 
   # join rr to cur_yr_df if grouping is mth_num_in_yr
@@ -171,7 +166,7 @@ fun <- function(
     cur_yr_df <- left_join(cur_yr_df, df_rr) %>%
       select(-yr_num) %>%
       mutate(metric_cur_yr = if_else(is.na(metric_rr), metric_cur_yr, metric_rr)) %>%
-      select(-metric_rr) %>%
+      select(-metric_rr)
 
     message(glue("Current Year Month {rr_mth} is RUN RATE")) # for visibility, echo run rate message
 
@@ -194,6 +189,7 @@ fun <- function(
         suffix = c("_cur_yr", "_prev_yr")
       )
   }
+
 
   # if goal(op2) is provided, join it
   if(!missing(df_goal)){
@@ -347,8 +343,11 @@ fun <- function(
   }
   ## df_full_yr
   if(div_by_1000){
-    if(full_yr){
+    if(grouping == "~mth_num_in_yr" & full_yr & missing(df_goal)){
       df_full_yr <- df_full_yr %>% mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(div_by_1000))
+    }
+    if(grouping == "~mth_num_in_yr" & full_yr & !missing(df_goal)){
+      df_full_yr <- df_full_yr %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(div_by_1000))
     }
   }
 
