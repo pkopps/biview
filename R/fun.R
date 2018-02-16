@@ -95,6 +95,11 @@ fun <- function(
       filter(wk_end_date >= ceiling_date( ( max(wk_end_date) - (7 * weeks_back) ) ) ) %>% # controls weeks back to calculate metric
       select(wk_num_in_yr) %>%
       pull() %>% unique()
+    wk_end_dates <- df %>%
+      arrange(wk_end_date) %>%
+      filter(wk_end_date >= ceiling_date( ( max(wk_end_date) - (7 * weeks_back) ) ) ) %>%
+      select(wk_end_date) %>%
+      pull() %>% unique()
   }
 
   # get number of months for current year ONLY (previous year will always be 12) for rate = TRUE
@@ -155,8 +160,13 @@ fun <- function(
       mutate(yr_num = yr_num + 1)
   }
 
-  # join rr to cur_yr_df if grouping is mth_num_in_yr
+  # join run rate to cur_yr_df if grouping is mth_num_in_yr
   if(grouping == "~mth_num_in_yr" & !missing(df_rr)){
+
+    # Preventative error handling for num vs int
+    # metric_class <- df %>% select(!!metric) %>% pull() %>% class()
+    # metric_rr_class <- df %>% select(!!metric_rr) %>% pull() %>% class()
+    # if(metric_class != metric_rr_class) stop(glue("Metric class {metric_class} and Run Rate class {metric_rr_class}"))
 
     rr_mth <- df_rr$mth_num_in_yr # store month num of run rate for message
 
@@ -260,11 +270,14 @@ fun <- function(
     }else if(!missing(df_goal)){ # OP2
       df <- df %>%
         mutate(metric_cur_yr = if_else(is.na(metric_cur_yr), metric_goal, metric_cur_yr)) %>%
-        mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) # op2 var
+        mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) %>%  # op2 var
+        mutate(goal_var = ifelse(goal_var == 0, NA, goal_var))
     }else{ # else do nothing
       NULL
     }
   }
+
+  # calculate goal var TODO
 
   # use this to determine if goal or forecasts have been provided. If one has been, do current year full year calc, else do not
   goal_or_forecasts_provided = !missing(df_goal) | !missing(df_3p9) | !missing(df_6p6) | !missing(df_9p3)
@@ -420,16 +433,48 @@ fun <- function(
   }
   # END add prefix and suffix
 
-  # handle % vs ppts for values and rates respectively
+  # handle % vs ppts for values and rates respectively for prev yr var and op2 var
   if(suffix == "%"){
-    df <- df %>% mutate(prev_yr_var = paste0(prev_yr_var, " ppts"))
+    df <- df %>% mutate(
+      prev_yr_var = paste0(prev_yr_var, " ppts")
+      )
+    if(!missing(df_goal)){
+      df <- df %>% mutate(
+        goal_var = paste0(goal_var, " ppts")
+      )
+    }
       if(full_yr){
-        df_full_yr <- df_full_yr %>% mutate(prev_yr_var = paste0(prev_yr_var, " ppts"))
+        df_full_yr <- df_full_yr %>%
+          mutate(
+            prev_yr_var = paste0(prev_yr_var, " ppts")
+            )
+        if(!missing(df_goal)){
+          df_full_yr <- df_full_yr %>%
+            mutate(
+              goal_var = paste0(goal_var, " ppts")
+            )
+        }
       }
   }else{
-    df <- df %>% mutate(prev_yr_var = paste0(prev_yr_var, "%"))
+    df <- df %>% mutate(
+      prev_yr_var = paste0(prev_yr_var, "%")
+      )
+    if(!missing(df_goal)){
+      df <- df %>% mutate(
+        goal_var = paste0(goal_var, "%")
+      )
+    }
       if(full_yr){
-        df_full_yr <- df_full_yr %>% mutate(prev_yr_var = paste0(prev_yr_var, "%"))
+        df_full_yr <- df_full_yr %>%
+          mutate(
+            prev_yr_var = paste0(prev_yr_var, "%")
+            )
+        if(!missing(df_goal)){
+          df_full_yr <- df_full_yr %>%
+            mutate(
+              goal_var = paste0(goal_var, "%")
+            )
+        }
       }
   }
 
@@ -519,6 +564,11 @@ fun <- function(
         metric = ordered(metric, levels = ordering_array)
       )
   }
+
+  # opt in to add week end dates to week column (to be header)
+  # if(grouping == "~wk_num_in_yr"){
+  #   names(df)[2:5] <- paste(wk_nums, wk_end_dates %>% as.character(), sep = "\n")
+  # }
 
   # join df_full_yr to mth data
   if(full_yr){
