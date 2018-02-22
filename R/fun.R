@@ -52,6 +52,7 @@ fun <- function(
   df_9p3,
   metric_9p3,
   weeks_back = 4,
+  week_end_dates = TRUE,
   full_yr = FALSE,
   rate = FALSE,
   new_name = NULL,
@@ -69,7 +70,8 @@ fun <- function(
   metric <- enquo(metric)
   grouping <- enquo(grouping)
   metric_rr <- enquo(metric_rr)
-  metric_goal <- enquo(metric_goal)
+
+  if(!missing(metric_goal)) metric_goal <- enquo(metric_goal)
 
   # errors/messaging
   ## if missing args
@@ -87,6 +89,19 @@ fun <- function(
   if(grouping == "~wk_num_in_yr" & full_yr == TRUE) stop("`full_yr` = TRUE not applicable for weekly grouping")
   if(grouping == "~yr_num" & full_yr == TRUE) stop("`full_yr` = TRUE not applicable for year grouping")
   if(grouping != "~mth_num_in_yr" & !missing(df_rr)) stop("run rate not applicable for groupings other than mth_num_in_yr")
+
+  # indicator variable for op2, 3+3, etc.
+  if(!missing(metric_goal)){
+    indicator <- "OP2"
+  }else if(!missing(metric_3p9)){
+    indicator <- "3+9"
+  }else if(!missing(metric_6p6)){
+    indicator <- "6+6"
+  }else if(!missing(metric_9p3)){
+    indicator <- "9+3"
+  }else{
+    indicator <- NULL
+  }
 
   # get relevant wk numbers
   if(grouping == "~wk_num_in_yr"){
@@ -269,9 +284,14 @@ fun <- function(
         select(-metric_3p9)
     }else if(!missing(df_goal)){ # OP2
       df <- df %>%
-        mutate(metric_cur_yr = if_else(is.na(metric_cur_yr), metric_goal, metric_cur_yr)) %>%
+        mutate(
+          type_cur_yr = if_else(!is.na(metric_cur_yr), "Actual", "OP2"),
+          # mth_num_in_yr = paste0(mth_num_in_yr,"|",type_cur_yr),
+          metric_cur_yr = if_else(is.na(metric_cur_yr), metric_goal, metric_cur_yr)
+          ) %>%
         mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) %>%  # op2 var
         mutate(goal_var = ifelse(goal_var == 0, NA, goal_var))
+
     }else{ # else do nothing
       NULL
     }
@@ -540,7 +560,7 @@ fun <- function(
   }
 
   # define order for metrics to display in output
-  ordering_array = c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var', 'metric_goal', 'goal_var')
+  ordering_array <- c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var', 'metric_goal', 'goal_var')
 
   #### transform from long to wide/horizontal view ####
   if(grouping == '~wk_num_in_yr'){ # wk
@@ -563,12 +583,22 @@ fun <- function(
       arrange(
         metric = ordered(metric, levels = ordering_array)
       )
+    # if(grouping == "~mth_num_in_yr"){ ## forces order of months
+    #   df <- df %>% select(
+    #     metric, starts_with("1|"), starts_with("2|"), starts_with("3|"), starts_with("4|"),
+    #     starts_with("5|"), starts_with("6|"), starts_with("7|"), starts_with("8|"),
+    #     starts_with("9|"), starts_with("10|"), starts_with("11|"), starts_with("12|")
+    #     )
+    # }
   }
 
-  # opt in to add week end dates to week column (to be header)
-  # if(grouping == "~wk_num_in_yr"){
-  #   names(df)[2:5] <- paste(wk_nums, wk_end_dates %>% as.character(), sep = "\n")
-  # }
+  # add week end dates to week column (to be header)
+  if(week_end_dates & grouping == "~wk_num_in_yr"){
+    # print(names(df))
+    # print(wk_nums)
+    # print(wk_end_dates %>% as.character())
+    names(df)[2:5] <- paste(paste0("w",wk_nums), wk_end_dates %>% as.character(), sep = "|")
+  }
 
   # join df_full_yr to mth data
   if(full_yr){
