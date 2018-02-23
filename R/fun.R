@@ -173,26 +173,37 @@ fun <- function(
 
   # split data into current year and previous year
   if(grouping != "~yr_num"){
+
     cur_yr_df <- df %>%
       filter(yr_num == max(df$yr_num)) %>%
       ungroup() %>%
       select(-yr_num) %>%
       rename(metric_cur_yr = !!metric)
+    # %>%
+    #   mutate(cur_yr_type = case_when(
+    #     is.na(metric_cur_yr) ~ '',
+    #     TRUE ~ 'Actual'
+    #   ))
+
     prev_yr_df <- df %>%
       filter(yr_num == max(df$yr_num) - 1) %>%
       ungroup() %>%
       select(-yr_num) %>%
       rename(metric_prev_yr = !!metric)
+
   }else{ # do not remove yr_num for join
+
     cur_yr_df <- df %>%
       filter(yr_num == max(df$yr_num)) %>%
       ungroup() %>%
       rename(metric_cur_yr = !!metric)
+
     prev_yr_df <- df %>%
       filter(yr_num == max(df$yr_num) - 1) %>%
       ungroup() %>%
       rename(metric_prev_yr = !!metric) %>%
       mutate(yr_num = yr_num + 1)
+
   }
 
   # join run rate to cur_yr_df if grouping is mth_num_in_yr
@@ -206,7 +217,8 @@ fun <- function(
     rr_mth <- df_rr$mth_num_in_yr # store month num of run rate for message
 
     df_rr <- df_rr %>% select(yr_num, mth_num_in_yr, !!metric_rr) %>%
-      rename(metric_rr = !!metric_rr)
+      rename(metric_rr = !!metric_rr) %>%
+      mutate(cur_yr_type = "Run Rate")
 
     cur_yr_df <- left_join(cur_yr_df, df_rr) %>%
       select(-yr_num) %>%
@@ -234,7 +246,6 @@ fun <- function(
         suffix = c("_cur_yr", "_prev_yr")
       )
   }
-
 
   # if goal(op2) is provided, join it
   if(!missing(df_goal)){
@@ -303,9 +314,10 @@ fun <- function(
         mutate(metric_cur_yr = if_else(is.na(metric_cur_yr), metric_3p9, metric_cur_yr)) %>%
         select(-metric_3p9)
     }else if(!missing(df_goal)){ # OP2
+
       df <- df %>%
         mutate(
-          type_cur_yr = if_else(!is.na(metric_cur_yr), "Actual", "OP2"),
+          cur_yr_type = if_else(!is.na(metric_cur_yr), "Actual", "OP2"),
           # mth_num_in_yr = paste0(mth_num_in_yr,"|",type_cur_yr),
           metric_cur_yr = if_else(is.na(metric_cur_yr), metric_goal, metric_cur_yr)
           ) %>%
@@ -316,8 +328,6 @@ fun <- function(
       NULL
     }
   }
-
-  # calculate goal var TODO
 
   # use this to determine if goal or forecasts have been provided. If one has been, do current year full year calc, else do not
   goal_or_forecasts_provided = !missing(df_goal) | !missing(df_3p9) | !missing(df_6p6) | !missing(df_9p3)
@@ -710,6 +720,7 @@ fun <- function(
   # define order for metrics to display in output
   ordering_array <- c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var', 'metric_goal', 'goal_var')
 
+
   #### transform from long to wide/horizontal view ####
   if(grouping == '~wk_num_in_yr'){ # wk
 
@@ -726,6 +737,7 @@ fun <- function(
 
   }else{ # mth & yr
     df <- df %>%
+      # select(-cur_yr_type) %>%
       gather(metric, value, -!!grouping) %>%
       spread(!!grouping, value) %>%
       arrange(

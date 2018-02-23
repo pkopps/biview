@@ -6,7 +6,7 @@ month_levels <- c(
 mth_num_in_yr_template <-
   tibble(
     yr_num = c(rep(year(Sys.Date()), 12), rep(year(Sys.Date()-365), 12)),
-    mth_num_in_yr = rep(1:12, 2),
+    mth_num_in_yr = rep(1:12, 2) %>% as.double(),
     mth_name = rep(factor(month.abb, month_levels), 2)
   )
 
