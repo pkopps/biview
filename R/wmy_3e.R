@@ -16,8 +16,10 @@ wmy_3e <- function(
   metric_6p6,
   df_9p3,
   metric_9p3,
-  week_end_dates = TRUE,
+  week_end_dates = FALSE,
+  week_start_dates = TRUE,
   full_yr = TRUE,
+  cbr_ytd = TRUE,
   rate = FALSE,
   new_name = NULL,
   accounting = TRUE,
@@ -46,6 +48,7 @@ wmy_3e <- function(
       full_yr = FALSE,
       rate = FALSE,
       week_end_dates = week_end_dates,
+      week_start_dates = week_start_dates,
       new_name = new_name,
       accounting = accounting,
       div_by_1000 = div_by_1000,
@@ -76,6 +79,7 @@ wmy_3e <- function(
         df_9p3 = df_9p3,
         metric_9p3 = !!metric_9p3,
         full_yr = full_yr,
+        cbr_ytd = cbr_ytd,
         rate = rate,
         new_name = new_name,
         accounting = accounting,
@@ -103,6 +107,7 @@ wmy_3e <- function(
         df_9p3 = df_9p3,
         metric_9p3 = !!metric_9p3,
         full_yr = full_yr,
+        cbr_ytd = cbr_ytd,
         rate = rate,
         new_name = new_name,
         accounting = accounting,
@@ -116,38 +121,39 @@ wmy_3e <- function(
   }
 
   # year
-  message("year")
-  y <-
-    fun(
-      df = df_yr,
-      metric = !!metric,
-      grouping = yr_num,
-      df_goal = df_goal,
-      metric_goal = !!metric_goal,
-      df_3p9 = df_3p9,
-      metric_3p9 = !!metric_3p9,
-      df_6p6 = df_6p6,
-      metric_6p6 = !!metric_6p6,
-      df_9p3 = df_9p3,
-      metric_9p3 = !!metric_9p3,
-      full_yr = FALSE,
-      rate = FALSE,
-      new_name = new_name,
-      accounting = accounting,
-      div_by_1000 = div_by_1000,
-      prefix = prefix,
-      suffix = suffix,
-      scalar = scalar,
-      spark = FALSE,
-      pop = FALSE
-    )
+  # message("year")
+  # y <-
+  #   fun(
+  #     df = df_yr,
+  #     metric = !!metric,
+  #     grouping = yr_num,
+  #     df_goal = df_goal,
+  #     metric_goal = !!metric_goal,
+  #     df_3p9 = df_3p9,
+  #     metric_3p9 = !!metric_3p9,
+  #     df_6p6 = df_6p6,
+  #     metric_6p6 = !!metric_6p6,
+  #     df_9p3 = df_9p3,
+  #     metric_9p3 = !!metric_9p3,
+  #     full_yr = FALSE,
+  #     rate = FALSE,
+  #     new_name = new_name,
+  #     accounting = accounting,
+  #     div_by_1000 = div_by_1000,
+  #     prefix = prefix,
+  #     suffix = suffix,
+  #     scalar = scalar,
+  #     spark = FALSE,
+  #     pop = FALSE
+  #   )
 
   # join wmy together
   message("join")
-  df <- right_join(w, m, by = c('metric' = 'metric')) %>% left_join(y, by = c('metric' = 'metric'))
-  df1 <- df %>% select(YTD, `Full Year`)
-  df2 <- df %>% select(-YTD, -`Full Year`)
-  df <- cbind(df2, df1)
+  df <- right_join(w, m, by = c('metric' = 'metric'))
+  # %>% left_join(y, by = c('metric' = 'metric'))
+  # df1 <- df %>% select(YTD, `Full Year`)
+  # df2 <- df %>% select(-YTD, -`Full Year`)
+  # df <- cbind(df2, df1)
 
   # return df
   message("return")

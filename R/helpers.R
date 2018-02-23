@@ -1,7 +1,13 @@
+month_levels <- c(
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+)
+
 mth_num_in_yr_template <-
   tibble(
     yr_num = c(rep(year(Sys.Date()), 12), rep(year(Sys.Date()-365), 12)),
-    mth_num_in_yr = rep(1:12, 2)
+    mth_num_in_yr = rep(1:12, 2),
+    mth_name = rep(factor(month.abb, month_levels), 2)
   )
 
 formattable_spark <- function(x){

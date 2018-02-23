@@ -14,6 +14,7 @@
 #' @param df_9p3 data frame containing metric prediction
 #' @param metric_9p3 column name from df_9p3
 #' @param full_yr logical. Inlcude full year summation column for month view
+#' @param cbr_ytd logical. Inlcude YTD definition for CBR : Actual values from last completed month
 #' @param rate logical. Adjust logic to handle full year for rates
 #' @param new_name name for metric output. Also creates new labels for previous year, previous year variance, etc.
 #' @param accounting format values as accountants do. ie: 1234000 -> 1,234,000 & -3000 -> (3000)
@@ -52,7 +53,9 @@ fun <- function(
   df_9p3,
   metric_9p3,
   weeks_back = 4,
-  week_end_dates = TRUE,
+  week_end_dates = FALSE,
+  week_start_dates = TRUE,
+  cbr_ytd = FALSE,
   full_yr = FALSE,
   rate = FALSE,
   new_name = NULL,
@@ -63,7 +66,8 @@ fun <- function(
   spark = FALSE,
   pop = FALSE,
   scalar = 1,
-  op2_and_var_ph = TRUE
+  op2_and_var_ph = TRUE,
+  month_names = TRUE
 ){
 
   # 'enquo' args for !!/!!!
@@ -72,6 +76,10 @@ fun <- function(
   metric_rr <- enquo(metric_rr)
 
   if(!missing(metric_goal)) metric_goal <- enquo(metric_goal)
+
+  # for cbr ytd
+  cur_yr <- max(df$yr_num)
+  cur_yr_mth <- month(Sys.Date())
 
   # errors/messaging
   ## if missing args
@@ -87,6 +95,8 @@ fun <- function(
   ## conflicting argument values errors/warnings
   if(suffix == "%" & div_by_1000 == TRUE) warning("Divide percentage by 1000? Are you sure?")
   if(grouping == "~wk_num_in_yr" & full_yr == TRUE) stop("`full_yr` = TRUE not applicable for weekly grouping")
+  if(grouping == "~wk_num_in_yr" & cbr_ytd == TRUE) stop("`cbr_ytd` = TRUE not applicable for weekly grouping")
+  if(grouping == "~wk_num_in_yr" & !missing(df_goal)) stop("goal not applicable for weekly grouping")
   if(grouping == "~yr_num" & full_yr == TRUE) stop("`full_yr` = TRUE not applicable for year grouping")
   if(grouping != "~mth_num_in_yr" & !missing(df_rr)) stop("run rate not applicable for groupings other than mth_num_in_yr")
 
@@ -105,15 +115,25 @@ fun <- function(
 
   # get relevant wk numbers
   if(grouping == "~wk_num_in_yr"){
+    # wk_nums <- df %>%
+    #   arrange(wk_end_date) %>%
+    #   filter(wk_end_date >= ceiling_date( ( max(wk_end_date) - (7 * weeks_back) ) ) ) %>% # controls weeks back to calculate metric
+    #   select(wk_num_in_yr) %>%
+    #   pull() %>% unique()
     wk_nums <- df %>%
-      arrange(wk_end_date) %>%
-      filter(wk_end_date >= ceiling_date( ( max(wk_end_date) - (7 * weeks_back) ) ) ) %>% # controls weeks back to calculate metric
+      arrange(wk_start_date) %>%
+      filter(wk_start_date >= ceiling_date( ( max(wk_start_date) - (7 * weeks_back) ) ) ) %>% # controls weeks back to calculate metric
       select(wk_num_in_yr) %>%
       pull() %>% unique()
-    wk_end_dates <- df %>%
-      arrange(wk_end_date) %>%
-      filter(wk_end_date >= ceiling_date( ( max(wk_end_date) - (7 * weeks_back) ) ) ) %>%
-      select(wk_end_date) %>%
+    # wk_end_dates <- df %>%
+    #   arrange(wk_end_date) %>%
+    #   filter(wk_end_date >= ceiling_date( ( max(wk_end_date) - (7 * weeks_back) ) ) ) %>%
+    #   select(wk_end_date) %>%
+    #   pull() %>% unique()
+    wk_start_dates <- df %>%
+      arrange(wk_start_date) %>%
+      filter(wk_start_date >= ceiling_date( ( max(wk_start_date) - (7 * weeks_back) ) ) ) %>%
+      select(wk_start_date) %>%
       pull() %>% unique()
   }
 
@@ -302,8 +322,9 @@ fun <- function(
   # use this to determine if goal or forecasts have been provided. If one has been, do current year full year calc, else do not
   goal_or_forecasts_provided = !missing(df_goal) | !missing(df_3p9) | !missing(df_6p6) | !missing(df_9p3)
 
+  # FULL YR
   # calculate full yr values for mth view, store in variable as dataframe to join later: included by default
-  if(full_yr){
+  if(grouping == "~mth_num_in_yr" & full_yr){
     if(!missing(df_goal)){
       df_full_yr <-
         df %>% select(metric_cur_yr, metric_prev_yr, metric_goal) %>%
@@ -322,6 +343,28 @@ fun <- function(
     }
   }
 
+  # CBR YTD
+  # calculate cbr_ytd values for mth view, store in variable as dataframe to join later: included by default
+  if(grouping == "~mth_num_in_yr" & cbr_ytd){
+    if(!missing(df_goal)){
+      df_cbr_ytd <-
+        df %>%
+          select(mth_num_in_yr, metric_cur_yr, metric_prev_yr, metric_goal) %>%
+          filter(mth_num_in_yr < cur_yr_mth) %>%
+          summarise_all(funs(sum(., na.rm = TRUE))) %>%
+          mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ) ) %>% # previous yr variance
+          mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) %>%  # goal variance
+          select(metric_cur_yr, metric_prev_yr, prev_yr_var, metric_goal, goal_var) # do select to enforce order
+    }else{
+      df_cbr_ytd <-
+        df %>%
+          select(mth_num_in_yr, metric_cur_yr, metric_prev_yr) %>%
+          filter(mth_num_in_yr < cur_yr_mth) %>%
+          summarise_all(funs(sum(., na.rm = TRUE))) %>%
+          select(metric_cur_yr, metric_prev_yr) # do select to enforce order
+    }
+  }
+
 ################
 
     # handle division for Full Year rates and YTD rates
@@ -336,8 +379,9 @@ fun <- function(
 
 ###################
 
+  # FULL YR
   # divide rate full yr values (sum of monthly rates) by 12 (number of month periods)
-  if(full_yr & rate){
+  if(grouping == "~mth_num_in_yr" & full_yr & rate){
     df_full_yr <- df_full_yr %>%
       mutate(
         metric_cur_yr = round((metric_cur_yr / 12), 2),
@@ -345,6 +389,15 @@ fun <- function(
       )
   }
 
+  if(grouping == "~mth_num_in_yr" & cbr_ytd & rate){
+    df_cbr_ytd <- df_cbr_ytd %>%
+      mutate(
+        metric_cur_yr = round((metric_cur_yr / ( cur_yr_mth - 1) ), 2), # number of months with actual values
+        metric_prev_yr = round((metric_prev_yr / ( cur_yr_mth - 1) ), 2)
+      )
+  }
+
+  # FULL YR
   # calculate previous year variance (could be with actuals, op2, or predictions)
   if(suffix == "%"){
       df <- df %>%
@@ -352,6 +405,9 @@ fun <- function(
         arrange(!!grouping)
     if(full_yr){
       df_full_yr <- df_full_yr %>% mutate(prev_yr_var = round ( ( metric_cur_yr - metric_prev_yr ), 2 ))
+    }
+    if(cbr_ytd){
+      df_cbr_ytd <- df_cbr_ytd %>% mutate(prev_yr_var = round ( ( metric_cur_yr - metric_prev_yr ), 2 ))
     }
   }else{
       df <- df %>%
@@ -363,8 +419,15 @@ fun <- function(
       df_full_yr <- df_full_yr %>%
         mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ))
     }
+    if(cbr_ytd){
+      df_cbr_ytd <- df_cbr_ytd %>%
+        mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ))
+    }
   }
 
+
+
+  # FULL YR
   # divide values by 1000
   ## df
   if(div_by_1000){
@@ -383,6 +446,16 @@ fun <- function(
       df_full_yr <- df_full_yr %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(div_by_1000))
     }
   }
+  ## df_cbr_ytd
+  if(div_by_1000){
+    if(grouping == "~mth_num_in_yr" & cbr_ytd & missing(df_goal)){
+      df_cbr_ytd <- df_cbr_ytd %>% mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(div_by_1000))
+    }
+    if(grouping == "~mth_num_in_yr" & cbr_ytd & !missing(df_goal)){
+      df_cbr_ytd <- df_cbr_ytd %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(div_by_1000))
+    }
+  }
+
 
   #sparkline # TODO, enforce order of wks <- NOTDONE and mnths <- DONE and DEBUG yr
   if(spark){
@@ -431,9 +504,10 @@ fun <- function(
       )
   }
 
+  # FULL YR
   # for df_full_yr
   if(grouping == "~mth_num_in_yr"){
-    if(full_yr == TRUE){
+    if(full_yr){
       if(!missing(df_goal)){
         df_full_yr <- df_full_yr %>%
           mutate(
@@ -450,19 +524,39 @@ fun <- function(
       }
     }
 
+    if(cbr_ytd){
+      if(!missing(df_goal)){
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate(
+            metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
+            metric_prev_yr = paste0(prefix, metric_prev_yr, suffix),
+            metric_goal = paste0(prefix, metric_goal, suffix)
+          )
+      }else{
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate(
+            metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
+            metric_prev_yr = paste0(prefix, metric_prev_yr, suffix)
+          )
+      }
+    }
+
   }
   # END add prefix and suffix
 
+
+  # FULL YR
   # handle % vs ppts for values and rates respectively for prev yr var and op2 var
   if(suffix == "%"){
-    df <- df %>% mutate(
-      prev_yr_var = paste0(prev_yr_var, " ppts")
-      )
-    if(!missing(df_goal)){
       df <- df %>% mutate(
-        goal_var = paste0(goal_var, " ppts")
-      )
-    }
+        prev_yr_var = paste0(prev_yr_var, " ppts")
+        )
+      if(!missing(df_goal)){
+        df <- df %>% mutate(
+          goal_var = paste0(goal_var, " ppts")
+        )
+      }
+
       if(full_yr){
         df_full_yr <- df_full_yr %>%
           mutate(
@@ -475,15 +569,31 @@ fun <- function(
             )
         }
       }
+
+      if(cbr_ytd){
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate(
+            prev_yr_var = paste0(prev_yr_var, " ppts")
+          )
+        if(!missing(df_goal)){
+          df_cbr_ytd <- df_cbr_ytd %>%
+            mutate(
+              goal_var = paste0(goal_var, " ppts")
+            )
+        }
+      }
+
   }else{
-    df <- df %>% mutate(
-      prev_yr_var = paste0(prev_yr_var, "%")
-      )
-    if(!missing(df_goal)){
+
       df <- df %>% mutate(
-        goal_var = paste0(goal_var, "%")
-      )
-    }
+        prev_yr_var = paste0(prev_yr_var, "%")
+        )
+      if(!missing(df_goal)){
+        df <- df %>% mutate(
+          goal_var = paste0(goal_var, "%")
+        )
+      }
+
       if(full_yr){
         df_full_yr <- df_full_yr %>%
           mutate(
@@ -491,6 +601,19 @@ fun <- function(
             )
         if(!missing(df_goal)){
           df_full_yr <- df_full_yr %>%
+            mutate(
+              goal_var = paste0(goal_var, "%")
+            )
+        }
+      }
+
+      if(cbr_ytd){
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate(
+            prev_yr_var = paste0(prev_yr_var, "%")
+          )
+        if(!missing(df_goal)){
+          df_cbr_ytd <- df_cbr_ytd %>%
             mutate(
               goal_var = paste0(goal_var, "%")
             )
@@ -534,6 +657,7 @@ fun <- function(
       }
     }
 
+    # FULL YR
     #df_full_yr
     if(full_yr){
       if(!missing(df_goal)){
@@ -557,7 +681,31 @@ fun <- function(
       }
     }
 
+    #df_cbr_ytd
+    if(cbr_ytd){
+      if(!missing(df_goal)){
+
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(prettyNum(., big.mark = ",")))
+
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate_at(
+            vars(prev_yr_var, goal_var), funs(neg_paren))
+
+      }else{
+
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(prettyNum(., big.mark = ",")))
+
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate_at(
+            vars(prev_yr_var), funs(neg_paren))
+
+      }
+    }
+
   }
+
 
   # define order for metrics to display in output
   ordering_array <- c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var', 'metric_goal', 'goal_var')
@@ -600,6 +748,20 @@ fun <- function(
     names(df)[2:5] <- paste(paste0("w",wk_nums), wk_end_dates %>% as.character(), sep = "|")
   }
 
+  # add week start dates to week column (to be header)
+  if(week_start_dates & grouping == "~wk_num_in_yr"){
+    # print(names(df))
+    # print(wk_nums)
+    # print(wk_end_dates %>% as.character())
+    names(df)[2:5] <- paste(paste0("w",wk_nums), wk_start_dates %>% as.character(), sep = "|")
+  }
+
+  # join df_cbr_ytd to mth data
+  if(cbr_ytd){
+    df <- left_join(df, df_cbr_ytd %>% gather(metric, `YTD`))
+  }
+
+  # FULL YR
   # join df_full_yr to mth data
   if(full_yr){
     df <- left_join(df, df_full_yr %>% gather(metric, `Full Year`))
@@ -637,6 +799,10 @@ fun <- function(
   # if yr grouping, rename column name from current year number to 'YTD' (ie: `2018` -> `YTD`)
   if(grouping == "~yr_num"){
     names(df) = c("metric", "YTD")
+  }
+
+  if(grouping == "~mth_num_in_yr" & month_names){
+    names(df)[2:13] <- month.abb
   }
 
   # return data frame

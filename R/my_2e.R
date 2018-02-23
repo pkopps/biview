@@ -115,37 +115,38 @@ my_2e <- function(
   }
 
   # year
-  message("year")
-  y <-
-    fun(
-      df = df_yr,
-      metric = !!metric,
-      grouping = yr_num,
-      df_goal = df_goal,
-      metric_goal = !!metric_goal,
-      df_3p9 = df_3p9,
-      metric_3p9 = !!metric_3p9,
-      df_6p6 = df_6p6,
-      metric_6p6 = !!metric_6p6,
-      df_9p3 = df_9p3,
-      metric_9p3 = !!metric_9p3,
-      full_yr = FALSE,
-      rate = FALSE,
-      new_name = new_name,
-      accounting = accounting,
-      div_by_1000 = div_by_1000,
-      prefix = prefix,
-      suffix = suffix,
-      spark = FALSE,
-      pop = FALSE
-    )
+  # message("year")
+  # y <-
+  #   fun(
+  #     df = df_yr,
+  #     metric = !!metric,
+  #     grouping = yr_num,
+  #     df_goal = df_goal,
+  #     metric_goal = !!metric_goal,
+  #     df_3p9 = df_3p9,
+  #     metric_3p9 = !!metric_3p9,
+  #     df_6p6 = df_6p6,
+  #     metric_6p6 = !!metric_6p6,
+  #     df_9p3 = df_9p3,
+  #     metric_9p3 = !!metric_9p3,
+  #     full_yr = FALSE,
+  #     rate = FALSE,
+  #     new_name = new_name,
+  #     accounting = accounting,
+  #     div_by_1000 = div_by_1000,
+  #     prefix = prefix,
+  #     suffix = suffix,
+  #     spark = FALSE,
+  #     pop = FALSE
+  #   )
 
   # join my together
-  message("join")
-  df <- left_join(m, y, by = c('metric' = 'metric'))
-  df1 <- df %>% select(YTD, `Full Year`)
-  df2 <- df %>% select(-YTD, -`Full Year`)
-  df <- cbind(df2, df1)
+  # message("join")
+  # df <- left_join(m, y, by = c('metric' = 'metric'))
+  df <- m
+  # df1 <- df %>% select(YTD, `Full Year`)
+  # df2 <- df %>% select(-YTD, -`Full Year`)
+  # df <- cbind(df2, df1)
 
   # return df
   message("return")
