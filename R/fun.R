@@ -720,7 +720,6 @@ fun <- function(
   # define order for metrics to display in output
   ordering_array <- c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var', 'metric_goal', 'goal_var')
 
-
   #### transform from long to wide/horizontal view ####
   if(grouping == '~wk_num_in_yr'){ # wk
 
@@ -736,8 +735,10 @@ fun <- function(
     names(df) <- c('metric', paste0("w",wk_nums))
 
   }else{ # mth & yr
+
     df <- df %>%
       # select(-cur_yr_type) %>%
+      select(-mth_name) %>% ######### throws warning because of the factor order of mth_names if not removed
       gather(metric, value, -!!grouping) %>%
       spread(!!grouping, value) %>%
       arrange(
