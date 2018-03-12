@@ -65,6 +65,7 @@ fun <- function(
   suffix = "",
   spark = FALSE,
   pop = FALSE,
+  pop_threshold = 100,
   scalar = 1,
   op2_and_var_ph = TRUE,
   month_names = TRUE
@@ -115,26 +116,19 @@ fun <- function(
 
   # get relevant wk numbers
   if(grouping == "~wk_num_in_yr"){
-    # wk_nums <- df %>%
-    #   arrange(wk_end_date) %>%
-    #   filter(wk_end_date >= ceiling_date( ( max(wk_end_date) - (7 * weeks_back) ) ) ) %>% # controls weeks back to calculate metric
-    #   select(wk_num_in_yr) %>%
-    #   pull() %>% unique()
+
     wk_nums <- df %>%
       arrange(wk_start_date) %>%
       filter(wk_start_date >= ceiling_date( ( max(wk_start_date) - (7 * weeks_back) ) ) ) %>% # controls weeks back to calculate metric
       select(wk_num_in_yr) %>%
       pull() %>% unique()
-    # wk_end_dates <- df %>%
-    #   arrange(wk_end_date) %>%
-    #   filter(wk_end_date >= ceiling_date( ( max(wk_end_date) - (7 * weeks_back) ) ) ) %>%
-    #   select(wk_end_date) %>%
-    #   pull() %>% unique()
+
     wk_start_dates <- df %>%
       arrange(wk_start_date) %>%
       filter(wk_start_date >= ceiling_date( ( max(wk_start_date) - (7 * weeks_back) ) ) ) %>%
       select(wk_start_date) %>%
       pull() %>% unique()
+
   }
 
   # get number of months for current year ONLY (previous year will always be 12) for rate = TRUE
@@ -485,7 +479,31 @@ fun <- function(
       mutate(
         metric_cur_yr_pop = round ( ( ( ( metric_cur_yr - lag(metric_cur_yr) ) / lag(metric_cur_yr) ) * 100 ), 2 ),
         metric_prev_yr_pop = round ( ( ( ( metric_prev_yr - lag(metric_prev_yr) ) / lag(metric_prev_yr) ) * 100 ), 2 )
-      ) %>%
+      )
+
+    if(grouping == "~wk_num_in_yr"){
+
+      pop_df <- df %>% select(wk_num_in_yr, metric_cur_yr_pop, metric_prev_yr_pop) %>%
+        filter(!is.na(metric_cur_yr_pop)) %>%
+        filter(wk_num_in_yr == max(wk_num_in_yr))
+
+      if(abs(pop_df$metric_cur_yr_pop) > pop_threshold) message(glue("Week: pop_df$metric_cur_yr_pop (absolute value) {abs(pop_df$metric_cur_yr_pop)} > pop_threshold {pop_threshold}"))
+
+    }
+
+    if(grouping == "~mth_num_in_yr"){
+
+      pop_df <- df %>% select(mth_num_in_yr, metric_cur_yr_pop) %>%
+        filter(!is.na(metric_cur_yr_pop)) %>%
+        filter(mth_num_in_yr == max(mth_num_in_yr))
+
+      if(abs(pop_df$metric_cur_yr_pop) > pop_threshold) message(glue("Month: pop_df$metric_cur_yr_pop (absolute value) {abs(pop_df$metric_cur_yr_pop)} > pop_threshold {pop_threshold}"))
+
+    }
+
+
+
+    df <- df %>%
       mutate(
         metric_cur_yr_pop = paste0(metric_cur_yr_pop,"%"),
         metric_prev_yr_pop = paste0(metric_prev_yr_pop,"%")
@@ -495,6 +513,7 @@ fun <- function(
         metric_prev_yr = paste(metric_prev_yr, metric_prev_yr_pop, sep = " | ")
       ) %>%
       select(-metric_cur_yr_pop, -metric_prev_yr_pop)
+
   }
 
   # add prefix and suffix
@@ -753,19 +772,8 @@ fun <- function(
     # }
   }
 
-  # add week end dates to week column (to be header)
-  if(week_end_dates & grouping == "~wk_num_in_yr"){
-    # print(names(df))
-    # print(wk_nums)
-    # print(wk_end_dates %>% as.character())
-    names(df)[2:5] <- paste(paste0("w",wk_nums), wk_end_dates %>% as.character(), sep = "|")
-  }
-
   # add week start dates to week column (to be header)
   if(week_start_dates & grouping == "~wk_num_in_yr"){
-    # print(names(df))
-    # print(wk_nums)
-    # print(wk_end_dates %>% as.character())
     names(df)[2:5] <- paste(paste0("w",wk_nums), wk_start_dates %>% as.character(), sep = "|")
   }
 

@@ -28,7 +28,8 @@ wmy_3e <- function(
   suffix = "",
   scalar = 1,
   spark = FALSE,
-  pop = FALSE
+  pop = FALSE,
+  pop_threshold = 100
   ){
 
   metric <- enquo(metric)
@@ -56,7 +57,8 @@ wmy_3e <- function(
       suffix = suffix,
       scalar = scalar,
       spark = spark,
-      pop = pop
+      pop = pop,
+      pop_threshold = pop_threshold
     )
 
   # month
@@ -88,7 +90,8 @@ wmy_3e <- function(
         suffix = suffix,
         scalar = scalar,
         spark = spark,
-        pop = pop
+        pop = pop,
+        pop_threshold = pop_threshold
       )
   }else{
     m <-
@@ -116,7 +119,8 @@ wmy_3e <- function(
         suffix = suffix,
         scalar = scalar,
         spark = spark,
-        pop = pop
+        pop = pop,
+        pop_threshold = pop_threshold
       )
   }
 
