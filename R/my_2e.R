@@ -32,8 +32,7 @@ my_2e <- function(
   metric_9p3 <- enquo(metric_9p3)
 
   # month
-  message("month")
-
+  # message("month")
   if(missing(df_rr) & missing(df_goal)){
     m <-
       fun(
