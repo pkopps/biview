@@ -784,12 +784,12 @@ fun <- function(
   # FULL YR
   # join df_full_yr to mth data
   if(full_yr){
-    df <- left_join(df, df_full_yr %>% gather(metric, `Full Year`))
+    df <- left_join(df, df_full_yr %>% gather(metric, `Full Year`), by = c('metric' = 'metric'))
   }
 
   # join spark chart
   if(spark){
-    df <- left_join(df, spark_df)
+    df <- left_join(df, spark_df, by = c('metric' = 'metric'))
   }
 
   #if op2_and_var_ph (op2 and variance place holder) == TRUE add placeholder lines
