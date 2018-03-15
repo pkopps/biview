@@ -795,7 +795,7 @@ fun <- function(
   #if op2_and_var_ph (op2 and variance place holder) == TRUE add placeholder lines
   if(op2_and_var_ph == TRUE){
     ph <- tibble(metric = c('metric_cur_yr', 'metric_prev_yr', 'prev_yr_var', 'metric_goal', 'goal_var'))
-    df <- left_join(ph, df)
+    df <- left_join(ph, df, by = c('metric' = 'metric'))
   }
 
   # if new name is provided, rename metric labels with respect to if goal (op2) is provided
