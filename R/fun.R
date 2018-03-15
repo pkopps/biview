@@ -257,7 +257,8 @@ fun <- function(
     df <-
       left_join(
         df,
-        df_goal
+        df_goal,
+        by = c("mth_num_in_yr" = "mth_num_in_yr")
       ) %>%
       mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) )
   } # END if goal(op2) is provided, join it
@@ -778,7 +779,7 @@ fun <- function(
 
   # join df_cbr_ytd to mth data
   if(cbr_ytd){
-    df <- left_join(df, df_cbr_ytd %>% gather(metric, `YTD`))
+    df <- left_join(df, df_cbr_ytd %>% gather(metric, `YTD`), by = c('metric' = 'metric'))
   }
 
   # FULL YR

@@ -151,7 +151,7 @@ wmy_3e <- function(
   #   )
 
   # join wmy together
-  message("join")
+  # message("join")
   df <- right_join(w, m, by = c('metric' = 'metric'))
   # %>% left_join(y, by = c('metric' = 'metric'))
   # df1 <- df %>% select(YTD, `Full Year`)
