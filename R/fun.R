@@ -200,29 +200,6 @@ fun <- function(
 
   }
 
-  # join run rate to cur_yr_df if grouping is mth_num_in_yr
-  if(grouping == "~mth_num_in_yr" & !missing(df_rr)){
-
-    # Preventative error handling for num vs int
-    # metric_class <- df %>% select(!!metric) %>% pull() %>% class()
-    # metric_rr_class <- df %>% select(!!metric_rr) %>% pull() %>% class()
-    # if(metric_class != metric_rr_class) stop(glue("Metric class {metric_class} and Run Rate class {metric_rr_class}"))
-
-    rr_mth <- df_rr$mth_num_in_yr # store month num of run rate for message
-
-    df_rr <- df_rr %>% select(yr_num, mth_num_in_yr, !!metric_rr) %>%
-      rename(metric_rr = !!metric_rr) %>%
-      mutate(cur_yr_type = "Run Rate")
-
-    cur_yr_df <- left_join(cur_yr_df, df_rr) %>%
-      select(-yr_num) %>%
-      mutate(metric_cur_yr = if_else(is.na(metric_rr), metric_cur_yr, metric_rr)) %>%
-      select(-metric_rr)
-
-    message(glue("Current Year Month {rr_mth} is RUN RATE")) # for visibility, echo run rate message
-
-  }
-
   # join current year and previous year together
   if(grouping == "~wk_num_in_yr"){ # ***function will join wk_num_in_yr with wk_end_date strangely if you leave `by` argument empty
     df <-
@@ -321,6 +298,28 @@ fun <- function(
     }else{ # else do nothing
       NULL
     }
+  }
+
+  # join run rate to cur_yr_df if grouping is mth_num_in_yr
+  if(grouping == "~mth_num_in_yr" & !missing(df_rr)){
+
+    # Preventative error handling for num vs int
+    # metric_class <- df %>% select(!!metric) %>% pull() %>% class()
+    # metric_rr_class <- df %>% select(!!metric_rr) %>% pull() %>% class()
+    # if(metric_class != metric_rr_class) stop(glue("Metric class {metric_class} and Run Rate class {metric_rr_class}"))
+
+    rr_mth <- df_rr$mth_num_in_yr # store month num of run rate for message
+
+    df_rr <- df_rr %>% select(yr_num, mth_num_in_yr, !!metric_rr) %>%
+      rename(metric_rr = !!metric_rr) %>%
+      mutate(cur_yr_type = "Run Rate")
+
+    df <- left_join(df, df_rr) %>%
+      mutate(metric_cur_yr = if_else(is.na(metric_rr), metric_cur_yr, metric_rr)) %>%
+      select(-metric_rr)
+
+    message(glue("Current Year Month {rr_mth} is RUN RATE")) # for visibility, echo run rate message
+
   }
 
   # use this to determine if goal or forecasts have been provided. If one has been, do current year full year calc, else do not
