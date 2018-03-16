@@ -358,6 +358,7 @@ fun <- function(
   # calculate cbr_ytd values for mth view, store in variable as dataframe to join later: included by default
   if(grouping == "~mth_num_in_yr" & cbr_ytd){
     if(!missing(df_goal)){
+
       df_cbr_ytd <-
         df %>%
           select(mth_num_in_yr, metric_cur_yr, metric_prev_yr, metric_goal) %>%
@@ -366,10 +367,6 @@ fun <- function(
           mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ) ) %>% # previous yr variance
           mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) %>%  # goal variance
           select(metric_cur_yr, metric_prev_yr, prev_yr_var, metric_goal, goal_var) # do select to enforce order
-
-      if(rate){
-        df_cbr_ytd %>% mutate(metric_goal = round((metric_goal/( cur_yr_mth - 1 )), 2))
-      }
 
     }else{
       df_cbr_ytd <-
@@ -410,6 +407,15 @@ fun <- function(
       mutate(
         metric_cur_yr = round((metric_cur_yr / ( cur_yr_mth - 1) ), 2), # number of months with actual values
         metric_prev_yr = round((metric_prev_yr / ( cur_yr_mth - 1) ), 2)
+      )
+  }
+
+  if(grouping == "~mth_num_in_yr" & cbr_ytd & rate & !missing(df_goal)){
+    df_cbr_ytd <- df_cbr_ytd %>%
+      mutate(
+        metric_cur_yr = round((metric_cur_yr / ( cur_yr_mth - 1) ), 2), # number of months with actual values
+        metric_prev_yr = round((metric_prev_yr / ( cur_yr_mth - 1) ), 2),
+        metric_goal = round((metric_goal / ( cur_yr_mth - 1) ), 2)
       )
   }
 
