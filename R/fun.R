@@ -340,6 +340,9 @@ fun <- function(
           mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ) ) %>% # previous yr variance
           mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) %>%  # goal variance
           select(metric_cur_yr, metric_prev_yr, prev_yr_var, metric_goal, goal_var) # do select to enforce order
+      if(rate){
+        df_full_yr <- df_full_yr %>% mutate(metric_goal = metric_goal/12)
+      }
     }else{
       df_full_yr <-
         df %>% select(metric_cur_yr, metric_prev_yr) %>%
