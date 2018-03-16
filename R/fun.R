@@ -252,6 +252,10 @@ fun <- function(
         group_by(yr_num) %>%
         summarise_at(vars(!!metric_goal), funs(sum)) %>%
         rename(metric_goal = !!metric_goal)
+      if(rate){
+        df_goal <- df_goal %>%
+          mutate(metric_goal = metric_goal/12)
+      }
     }
 
     df <-
@@ -428,8 +432,6 @@ fun <- function(
         mutate(prev_yr_var = round ( ( ( ( metric_cur_yr - metric_prev_yr ) / metric_prev_yr ) * 100 ), 2 ))
     }
   }
-
-
 
   # FULL YR
   # divide values by 1000
