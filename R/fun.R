@@ -413,8 +413,6 @@ fun <- function(
   if(grouping == "~mth_num_in_yr" & cbr_ytd & rate & !missing(df_goal)){
     df_cbr_ytd <- df_cbr_ytd %>%
       mutate(
-        metric_cur_yr = round((metric_cur_yr / ( cur_yr_mth - 1) ), 2), # number of months with actual values
-        metric_prev_yr = round((metric_prev_yr / ( cur_yr_mth - 1) ), 2),
         metric_goal = round((metric_goal / ( cur_yr_mth - 1) ), 2)
       )
   }
