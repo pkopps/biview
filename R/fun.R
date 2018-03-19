@@ -104,6 +104,7 @@ fun <- function(
   # indicator variable for op2, 3+3, etc.
   if(!missing(metric_goal)){
     indicator <- "OP2"
+    if(any(df_goal$metric_goal %in% 0)) warning("'0' values in metric_goal argument")
   }else if(!missing(metric_3p9)){
     indicator <- "3+9"
   }else if(!missing(metric_6p6)){
