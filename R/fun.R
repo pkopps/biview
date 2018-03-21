@@ -1,4 +1,4 @@
-#' Depended on by wmy_1e & wmy_3e. Transform regular long data into BI horizontal wk, mth, and yr, views with current yr, previous yr, previous yr variance, etc.
+#' Core function of wmy_1e, wmy_3e, & my_2e
 #'
 #' @param df data frame containing metric
 #' @param metric column name from df
@@ -20,11 +20,9 @@
 #' @param accounting format values as accountants do. ie: 1234000 -> 1,234,000 & -3000 -> (3000)
 #' @param div_by_1000 also an accounting practice; divide all value by 1000. ie: 1234000 -> 1234.00
 #' @param prefix add prefix to values. ie: 2000 -> $2000
-#' @param suffix add suffix to values. ie: 20.54 -> 20.54%
-#' @param spark logical. should a spark chart be added as a column in the output
-#' @param pop logical. stands for Period over Period. Include percent change from previous period (ie: week 4 to week 5) next to value
-#'
-#' @return data frame
+#' @param suffix add suffix to values. ie: 20.54 -> 20.54\%
+#' @param spark logical should a spark chart be added as a column in the output
+#' @param pop logical stands for Period over Period. Include percent change from previous period (ie: week 4 to week 5) next to value
 #'
 #' @examples
 #'fun(
@@ -36,8 +34,7 @@
 #` div_by_1000 = FALSE,
 #` full_yr = FALSE,
 #` prefix = "$"
-#` )
-#`
+#`)
 fun <- function(
   df,
   metric,

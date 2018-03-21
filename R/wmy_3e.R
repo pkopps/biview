@@ -1,5 +1,42 @@
-# wmy_3e
-
+#' Transform normal data frames into horizontal/time series view
+#'
+#' @param df_wk weekly grain data frame
+#' @param df_mth monthly grain data frame
+#' @param df_yr yearly grain data frame
+#' @param metric column name for metric (uniform across all the grains of data frames)
+#' @param df_rr data frame containing run rate
+#' @param metric_rr column name from df_rr
+#' @param df_goal
+#' @param metric_goal
+#' @param df_3p9
+#' @param metric_3p9
+#' @param df_6p6
+#' @param metric_6p6
+#' @param df_9p3
+#' @param metric_9p3
+#' @param week_end_dates
+#' @param week_start_dates
+#' @param full_yr
+#' @param cbr_ytd
+#' @param rate
+#' @param new_name
+#' @param accounting
+#' @param div_by_1000
+#' @param prefix
+#' @param suffix
+#' @param scalar
+#' @param spark
+#' @param pop
+#' @param pop_threshold
+#' @param in_mth_header_op2
+#' @param in_mth_header_3p9
+#' @param in_mth_header_6p6
+#' @param in_mth_header_9p3
+#'
+#' @return
+#' @export
+#'
+#' @examples
 wmy_3e <- function(
   df_wk,
   df_mth,
