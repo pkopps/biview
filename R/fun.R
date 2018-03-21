@@ -68,7 +68,11 @@ fun <- function(
   pop_threshold = 100,
   scalar = 1,
   op2_and_var_ph = TRUE,
-  month_names = TRUE
+  month_names = TRUE,
+  in_mth_header_op2 = TRUE,
+  in_mth_header_3p9 = FALSE,
+  in_mth_header_6p6 = FALSE,
+  in_mth_header_9p3 = FALSE
 ){
 
   # 'enquo' args for !!/!!!
@@ -104,7 +108,7 @@ fun <- function(
   # indicator variable for op2, 3+3, etc.
   if(!missing(metric_goal)){
     indicator <- "OP2"
-    if(any(df_goal %>% select(!!metric_goal) %>% pull() %in% 0)) warning("Warning: '0' values in metric_goal argument\n")
+      if(any(df_goal %>% select(!!metric_goal) %>% pull() %in% 0)) warning("Warning: '0' values in metric_goal argument\n")
   }else if(!missing(metric_3p9)){
     indicator <- "3+9"
   }else if(!missing(metric_6p6)){
@@ -174,11 +178,6 @@ fun <- function(
       ungroup() %>%
       select(-yr_num) %>%
       rename(metric_cur_yr = !!metric)
-    # %>%
-    #   mutate(cur_yr_type = case_when(
-    #     is.na(metric_cur_yr) ~ '',
-    #     TRUE ~ 'Actual'
-    #   ))
 
     prev_yr_df <- df %>%
       filter(yr_num == max(df$yr_num) - 1) %>%
@@ -239,6 +238,22 @@ fun <- function(
         prev_yr_df,
         suffix = c("_cur_yr", "_prev_yr")
       )
+
+      # if(in_mth_header_op2 & grouping == "~mth_num_in_yr"){
+      #   df <- df %>%
+      #     mutate(
+      #       mth_name = case_when(
+      #         mth_num_in_yr > month(Sys.Date()) ~ paste0(mth_name, " (OP2)"),
+      #         TRUE ~ as.character(mth_name)
+      #       ),
+      #       mth_num_in_yr = case_when(
+      #         mth_num_in_yr > month(Sys.Date()) ~ paste0(mth_num_in_yr, " (OP2)"),
+      #         TRUE ~ as.character(mth_num_in_yr)
+      #       )
+      #     ) %>%
+      #     mutate_at(vars(mth_num_in_yr, mth_name), funs(as.factor(.)))
+      # }
+
   }
 
   # if goal(op2) is provided, join it
@@ -839,7 +854,16 @@ fun <- function(
 
   if(grouping == "~mth_num_in_yr" & month_names){
     names(df)[2:13] <- month.abb
+      if(in_mth_header_op2){
+        month(Sys.Date()) + 2 -> start_pos
+        names(df)[start_pos:13] <- paste0(names(df)[start_pos:13], " (OP2)")
+      }
   }
+
+  # if(grouping == "~mth_num_in_yr" & in_mth_header_op2){
+  #   month(Sys.Date()) + 2
+  #   names(df)[(month(Sys.Date()) + 1):13] <- paste0(names(df), " (OP2)")
+  # }
 
   # return data frame
   df

@@ -21,7 +21,11 @@ my_2e <- function(
   prefix = "",
   suffix = "",
   spark = FALSE,
-  pop = FALSE
+  pop = FALSE,
+  in_mth_header_op2 = TRUE,
+  in_mth_header_3p9 = FALSE,
+  in_mth_header_6p6 = FALSE,
+  in_mth_header_9p3 = FALSE
 ){
 
   metric <- enquo(metric)
@@ -57,7 +61,8 @@ my_2e <- function(
         prefix = prefix,
         suffix = suffix,
         spark = spark,
-        pop = pop
+        pop = pop,
+        in_mth_header_op2 = in_mth_header_op2
       )
   }else if(missing(df_rr)){
     m <-
@@ -83,7 +88,8 @@ my_2e <- function(
         prefix = prefix,
         suffix = suffix,
         spark = spark,
-        pop = pop
+        pop = pop,
+        in_mth_header_op2 = in_mth_header_op2
       )
   }else{
     m <-

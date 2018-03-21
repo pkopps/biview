@@ -29,7 +29,11 @@ wmy_3e <- function(
   scalar = 1,
   spark = FALSE,
   pop = FALSE,
-  pop_threshold = 100
+  pop_threshold = 100,
+  in_mth_header_op2 = TRUE,
+  in_mth_header_3p9 = FALSE,
+  in_mth_header_6p6 = FALSE,
+  in_mth_header_9p3 = FALSE
   ){
 
   metric <- enquo(metric)
@@ -90,7 +94,8 @@ wmy_3e <- function(
         scalar = scalar,
         spark = spark,
         pop = pop,
-        pop_threshold = pop_threshold
+        pop_threshold = pop_threshold,
+        in_mth_header_op2 = in_mth_header_op2
       )
   }else{
     m <-
@@ -119,7 +124,8 @@ wmy_3e <- function(
         scalar = scalar,
         spark = spark,
         pop = pop,
-        pop_threshold = pop_threshold
+        pop_threshold = pop_threshold,
+        in_mth_header_op2 = in_mth_header_op2
       )
   }
 
