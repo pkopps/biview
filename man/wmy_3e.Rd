@@ -2,7 +2,7 @@
 % Please edit documentation in R/wmy_3e.R
 \name{wmy_3e}
 \alias{wmy_3e}
-\title{Transform normal data frames into horizontal/time series view}
+\title{[w]eek [m]onth [y]ear _ [3] [e]xports}
 \usage{
 wmy_3e(df_wk, df_mth, df_yr, metric, df_rr, metric_rr, df_goal, metric_goal,
   df_3p9, metric_3p9, df_6p6, metric_6p6, df_9p3, metric_9p3,
@@ -29,5 +29,5 @@ wmy_3e(df_wk, df_mth, df_yr, metric, df_rr, metric_rr, df_goal, metric_goal,
 \item{in_mth_header_9p3}{}
 }
 \description{
-Transform normal data frames into horizontal/time series view
+[w]eek [m]onth [y]ear _ [3] [e]xports
 }

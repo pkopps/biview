@@ -1,4 +1,4 @@
-#' Transform normal data frames into horizontal/time series view
+#' [w]eek [m]onth [y]ear _ [3] [e]xports
 #'
 #' @param df_wk weekly grain data frame
 #' @param df_mth monthly grain data frame

@@ -64,8 +64,27 @@ fun(df, metric, grouping, df_rr, metric_rr, df_goal, metric_goal, df_3p9,
 Core function of wmy_1e, wmy_3e, & my_2e
 }
 \examples{
+## week view
 fun(
 performance,
 revenue,
 wk_num_in_yr,
+new_name = "Revenue",
+accounting = TRUE,
+div_by_1000 = FALSE,
+full_yr = FALSE,
+prefix = "$"
+)
+
+## month view
+fun(
+performance,
+revenue,
+mth_num_in_yr,
+new_name = "Revenue",
+accounting = TRUE,
+div_by_1000 = FALSE,
+full_yr = FALSE,
+prefix = "$"
+)
 }

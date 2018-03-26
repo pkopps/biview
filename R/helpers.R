@@ -63,6 +63,9 @@ dimensions <- c("date_value",
 #
 # performance <- data.frame(
 #   company_name = "Dunder Mifflin",
+#   branch = 'Scranton',
+#   state_abb = 'PA',
+#   salesman_full_name = "Dwight Schrute",
 #   marketplace_short_name = "US",
 #   date_value = date_seq,
 #   yr_num = epiyear(date_seq),

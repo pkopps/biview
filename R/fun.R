@@ -25,16 +25,29 @@
 #' @param pop logical stands for Period over Period. Include percent change from previous period (ie: week 4 to week 5) next to value
 #'
 #' @examples
+#'## week view
 #'fun(
 #' performance,
 #' revenue,
 #' wk_num_in_yr,
-#` new_name = "Revenue",
-#` accounting = TRUE,
-#` div_by_1000 = FALSE,
-#` full_yr = FALSE,
-#` prefix = "$"
-#`)
+#' new_name = "Revenue",
+#' accounting = TRUE,
+#' div_by_1000 = FALSE,
+#' full_yr = FALSE,
+#' prefix = "$"
+#')
+#'
+#'## month view
+#'fun(
+#' performance,
+#' revenue,
+#' mth_num_in_yr,
+#' new_name = "Revenue",
+#' accounting = TRUE,
+#' div_by_1000 = FALSE,
+#' full_yr = FALSE,
+#' prefix = "$"
+#' )
 fun <- function(
   df,
   metric,
