@@ -70,7 +70,7 @@ fun <- function(
   rate = FALSE,
   new_name = NULL,
   accounting = FALSE,
-  div_by_1000 = TRUE,
+  div_by_1000 = FALSE,
   prefix = "",
   suffix = "",
   spark = FALSE,
