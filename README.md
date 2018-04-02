@@ -11,8 +11,10 @@ devtools::install_github("pkopps/biview")
 # Usage
 
 ```r
+library(biview)
+
 fun(
-  performance,
+  df = performance,
   metric = revenue,
   grouping = wk_num_in_yr
 )
@@ -25,3 +27,22 @@ fun(
 # 4 metric_goal    NA           NA           NA           NA          
 # 5 goal_var       NA           NA           NA           NA
 ```
+
+## Combine with other packages like dplyr and formattable to add more flexibility
+
+```r
+library(biview)
+library(dplyr)
+library(formattable)
+
+performance %>% 
+  filter(company_name == 'Dunder Mifflin', salesman_full_name == 'Dwight Schrute') %>% 
+  fun(
+    df = .,
+    metric = revenue,
+    grouping = wk_num_in_yr
+  ) %>% 
+  formattable()
+```
+
+![formattable](./formattable.png?raw=true)
