@@ -8,7 +8,7 @@ fun(df, metric, grouping, df_rr, metric_rr, df_goal, metric_goal, df_3p9,
   metric_3p9, df_6p6, metric_6p6, df_9p3, metric_9p3, weeks_back = 4,
   week_end_dates = FALSE, week_start_dates = TRUE, cbr_ytd = FALSE,
   full_yr = FALSE, rate = FALSE, new_name = NULL, accounting = FALSE,
-  div_by_1000 = TRUE, prefix = "", suffix = "", spark = FALSE,
+  div_by_1000 = FALSE, prefix = "", suffix = "", spark = FALSE,
   pop = FALSE, pop_threshold = 100, scalar = 1, op2_and_var_ph = TRUE,
   month_names = TRUE, in_mth_header_op2 = TRUE, in_mth_header_3p9 = FALSE,
   in_mth_header_6p6 = FALSE, in_mth_header_9p3 = FALSE)

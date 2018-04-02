@@ -142,6 +142,7 @@ fun <- function(
       arrange(wk_start_date) %>%
       filter(wk_start_date >= ceiling_date( ( max(wk_start_date) - (7 * weeks_back) ) ) ) %>%
       select(wk_start_date) %>%
+      mutate(wk_start_date = format(wk_start_date, format = "%d-%b")) %>%
       pull() %>% unique()
 
   }
