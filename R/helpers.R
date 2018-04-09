@@ -28,7 +28,7 @@ div_by_1000 <- function(x){
 }
 
 round_sum <- function(x){
-  round(sum(x, na.rm=TRUE), 2)
+  round(sum(x, na.rm=TRUE), 1)
 }
 
 round_to_two <- function(x){

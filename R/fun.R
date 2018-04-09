@@ -108,6 +108,7 @@ fun <- function(
   if(nrow(df) == 0) stop("empty data frame supplied")
 
   ## conflicting argument values errors/warnings
+
   if(suffix == "%" & div_by_1000 == TRUE) warning("Divide percentage by 1000? Are you sure?")
   if(grouping == "~wk_num_in_yr" & full_yr == TRUE) stop("`full_yr` = TRUE not applicable for weekly grouping")
   if(grouping == "~wk_num_in_yr" & cbr_ytd == TRUE) stop("`cbr_ytd` = TRUE not applicable for weekly grouping")
