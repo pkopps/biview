@@ -560,9 +560,6 @@ fun <- function(
 
   # add prefix and suffix
   # for df
-
-  print(df)
-
   if(!missing(df_goal)){
     df <- df %>%
       mutate(
@@ -577,8 +574,6 @@ fun <- function(
         metric_prev_yr = ifelse(!is.na(metric_prev_yr), paste0(prefix, metric_prev_yr, suffix), NA)
       )
   }
-
-  print(df)
 
   # FULL YR
   # for df_full_yr
