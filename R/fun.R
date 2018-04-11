@@ -702,6 +702,7 @@ fun <- function(
   # apply accounting formatting -7437834 -> (7437834); 17000 -> 17,000
   if(accounting){
 
+    print(df)
     # df
     ## add commas (17000 -> 17,000)
     if(grouping == "~wk_num_in_yr"){ # no goal for wk view
