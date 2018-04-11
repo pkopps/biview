@@ -22,6 +22,7 @@ my_2e <- function(
   suffix = "",
   spark = FALSE,
   pop = FALSE,
+  digitsAfterDecimal = 2,
   in_mth_header_op2 = TRUE,
   in_mth_header_3p9 = FALSE,
   in_mth_header_6p6 = FALSE,

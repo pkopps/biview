@@ -25,6 +25,7 @@
 #' @param prefix
 #' @param suffix
 #' @param scalar
+#' @param digitsAfterDecimal
 #' @param spark
 #' @param pop
 #' @param pop_threshold
@@ -64,6 +65,7 @@ wmy_3e <- function(
   prefix = "",
   suffix = "",
   scalar = 1,
+  digitsAfterDecimal = 2,
   spark = FALSE,
   pop = FALSE,
   pop_threshold = 100,
@@ -97,6 +99,7 @@ wmy_3e <- function(
       prefix = prefix,
       suffix = suffix,
       scalar = scalar,
+      digitsAfterDecimal = digitsAfterDecimal,
       spark = spark,
       pop = pop,
       pop_threshold = pop_threshold
@@ -129,6 +132,7 @@ wmy_3e <- function(
         prefix = prefix,
         suffix = suffix,
         scalar = scalar,
+        digitsAfterDecimal = digitsAfterDecimal,
         spark = spark,
         pop = pop,
         pop_threshold = pop_threshold,
@@ -159,6 +163,7 @@ wmy_3e <- function(
         prefix = prefix,
         suffix = suffix,
         scalar = scalar,
+        digitsAfterDecimal = digitsAfterDecimal,
         spark = spark,
         pop = pop,
         pop_threshold = pop_threshold,
