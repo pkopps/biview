@@ -77,6 +77,7 @@ fun <- function(
   pop = FALSE,
   pop_threshold = 100,
   scalar = 1,
+  digitsAfterDecimal = 2,
   op2_and_var_ph = TRUE,
   month_names = TRUE,
   in_mth_header_op2 = TRUE,
@@ -84,6 +85,11 @@ fun <- function(
   in_mth_header_6p6 = FALSE,
   in_mth_header_9p3 = FALSE
 ){
+
+  #round sum helper fun
+  round_sum <- function(x){
+    round(sum(x, na.rm=TRUE), digitsAfterDecimal)
+  }
 
   # 'enquo' args for !!/!!!
   metric <- enquo(metric)
@@ -369,7 +375,7 @@ fun <- function(
           mutate(goal_var = round ( ( ( ( metric_cur_yr - metric_goal ) / metric_goal ) * 100 ), 2 ) ) %>%  # goal variance
           select(metric_cur_yr, metric_prev_yr, prev_yr_var, metric_goal, goal_var) # do select to enforce order
       if(rate){
-        df_full_yr <- df_full_yr %>% mutate(metric_goal = round((metric_goal/12),2))
+        df_full_yr <- df_full_yr %>% mutate(metric_goal = round((metric_goal/12), digitsAfterDecimal))
       }
     }else{
       df_full_yr <-
@@ -425,16 +431,16 @@ fun <- function(
   if(grouping == "~mth_num_in_yr" & full_yr & rate){
     df_full_yr <- df_full_yr %>%
       mutate(
-        metric_cur_yr = round((metric_cur_yr / 12), 2),
-        metric_prev_yr = round((metric_prev_yr / 12), 2)
+        metric_cur_yr = round((metric_cur_yr / 12), digitsAfterDecimal),
+        metric_prev_yr = round((metric_prev_yr / 12), digitsAfterDecimal)
       )
   }
 
   if(grouping == "~mth_num_in_yr" & cbr_ytd & rate){
     df_cbr_ytd <- df_cbr_ytd %>%
       mutate(
-        metric_cur_yr = round((metric_cur_yr / ( cur_yr_mth - 1) ), 2), # number of months with actual values
-        metric_prev_yr = round((metric_prev_yr / ( cur_yr_mth - 1) ), 2)
+        metric_cur_yr = round((metric_cur_yr / ( cur_yr_mth - 1) ), digitsAfterDecimal), # number of months with actual values
+        metric_prev_yr = round((metric_prev_yr / ( cur_yr_mth - 1) ), digitsAfterDecimal)
       )
   }
 
