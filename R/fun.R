@@ -560,20 +560,25 @@ fun <- function(
 
   # add prefix and suffix
   # for df
+
+  print(df)
+
   if(!missing(df_goal)){
     df <- df %>%
       mutate(
-        metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
-        metric_prev_yr = paste0(prefix, metric_prev_yr, suffix),
-        metric_goal = paste0(prefix, metric_goal, suffix)
+        metric_cur_yr = ifelse(!is.na(metric_cur_yr), paste0(prefix, metric_cur_yr, suffix), NA),
+        metric_prev_yr = ifelse(!is.na(metric_prev_yr), paste0(prefix, metric_prev_yr, suffix), NA),
+        metric_goal = ifelse(!is.na(metric_goal), paste0(prefix, metric_goal, suffix), NA)
       )
   }else{
     df <- df %>%
       mutate(
-        metric_cur_yr = paste0(prefix, metric_cur_yr, suffix),
-        metric_prev_yr = paste0(prefix, metric_prev_yr, suffix)
+        metric_cur_yr = ifelse(!is.na(metric_cur_yr), paste0(prefix, metric_cur_yr, suffix), NA),
+        metric_prev_yr = ifelse(!is.na(metric_prev_yr), paste0(prefix, metric_prev_yr, suffix), NA)
       )
   }
+
+  print(df)
 
   # FULL YR
   # for df_full_yr
