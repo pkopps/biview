@@ -615,28 +615,28 @@ fun <- function(
   }
   # END add prefix and suffix
 
-
+  # ifelse(!is.na(metric_cur_yr), paste0(prefix, metric_cur_yr, suffix), NA),
   # FULL YR
   # handle % vs ppts for values and rates respectively for prev yr var and op2 var
   if(suffix == "%"){
       df <- df %>% mutate(
-        prev_yr_var = paste0(prev_yr_var, " ppts")
+        prev_yr_var = ifelse(!is.na(prev_yr_var), paste0(prev_yr_var, " ppts"), NA)
         )
       if(!missing(df_goal)){
         df <- df %>% mutate(
-          goal_var = paste0(goal_var, " ppts")
+          goal_var = ifelse(!is.na(goal_var), paste0(goal_var, " ppts"), NA)
         )
       }
 
       if(full_yr){
         df_full_yr <- df_full_yr %>%
           mutate(
-            prev_yr_var = paste0(prev_yr_var, " ppts")
+            prev_yr_var = ifelse(!is.na(prev_yr_var), paste0(prev_yr_var, " ppts"), NA)
             )
         if(!missing(df_goal)){
           df_full_yr <- df_full_yr %>%
             mutate(
-              goal_var = paste0(goal_var, " ppts")
+              goal_var = ifelse(!is.na(goal_var), paste0(goal_var, " ppts"), NA)
             )
         }
       }
@@ -644,12 +644,12 @@ fun <- function(
       if(cbr_ytd){
         df_cbr_ytd <- df_cbr_ytd %>%
           mutate(
-            prev_yr_var = paste0(prev_yr_var, " ppts")
+            prev_yr_var = ifelse(!is.na(prev_yr_var), paste0(prev_yr_var, " ppts"), NA)
           )
         if(!missing(df_goal)){
           df_cbr_ytd <- df_cbr_ytd %>%
             mutate(
-              goal_var = paste0(goal_var, " ppts")
+              goal_var = ifelse(!is.na(goal_var), paste0(goal_var, " ppts"), NA)
             )
         }
       }
@@ -657,23 +657,23 @@ fun <- function(
   }else{
 
       df <- df %>% mutate(
-        prev_yr_var = paste0(prev_yr_var, "%")
+        prev_yr_var = ifelse(!is.na(prev_yr_var), paste0(prev_yr_var, "%"), NA)
         )
       if(!missing(df_goal)){
         df <- df %>% mutate(
-          goal_var = paste0(goal_var, "%")
+          goal_var = ifelse(!is.na(goal_var), paste0(goal_var, "%"), NA)
         )
       }
 
       if(full_yr){
         df_full_yr <- df_full_yr %>%
           mutate(
-            prev_yr_var = paste0(prev_yr_var, "%")
+            prev_yr_var = ifelse(!is.na(prev_yr_var), paste0(prev_yr_var, "%"), NA)
             )
         if(!missing(df_goal)){
           df_full_yr <- df_full_yr %>%
             mutate(
-              goal_var = paste0(goal_var, "%")
+              goal_var = ifelse(!is.na(goal_var), paste0(goal_var, "%"), NA)
             )
         }
       }
@@ -681,12 +681,12 @@ fun <- function(
       if(cbr_ytd){
         df_cbr_ytd <- df_cbr_ytd %>%
           mutate(
-            prev_yr_var = paste0(prev_yr_var, "%")
+            prev_yr_var = ifelse(!is.na(prev_yr_var), paste0(prev_yr_var, "%"), NA)
           )
         if(!missing(df_goal)){
           df_cbr_ytd <- df_cbr_ytd %>%
             mutate(
-              goal_var = paste0(goal_var, "%")
+              goal_var = ifelse(!is.na(goal_var), paste0(goal_var, "%"), NA)
             )
         }
       }
