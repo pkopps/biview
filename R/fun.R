@@ -508,7 +508,6 @@ fun <- function(
     }
   }
 
-
   #sparkline # TODO, enforce order of wks <- NOTDONE and mnths <- DONE and DEBUG yr
   if(spark){
     spark_df <- tibble(
@@ -548,7 +547,6 @@ fun <- function(
       if(abs(pop_df$metric_cur_yr_pop) > pop_threshold) message(glue("Month: pop_df$metric_cur_yr_pop (absolute value) {abs(pop_df$metric_cur_yr_pop)} > pop_threshold {pop_threshold}"))
 
     }
-
 
 
     df <- df %>%
@@ -701,8 +699,6 @@ fun <- function(
 
   # apply accounting formatting -7437834 -> (7437834); 17000 -> 17,000
   if(accounting){
-
-    print(df)
     # df
     ## add commas (17000 -> 17,000)
     if(grouping == "~wk_num_in_yr"){ # no goal for wk view
@@ -734,6 +730,7 @@ fun <- function(
             vars(prev_yr_var), funs(neg_paren))
       }
     }
+
 
     # FULL YR
     #df_full_yr
@@ -768,7 +765,8 @@ fun <- function(
 
         df_cbr_ytd <- df_cbr_ytd %>%
           mutate_at(
-            vars(prev_yr_var, goal_var), funs(neg_paren))
+            vars(prev_yr_var, goal_var), funs(neg_paren)
+            )
 
       }else{
 
