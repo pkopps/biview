@@ -479,6 +479,17 @@ fun <- function(
     }
   }
 
+  ### round everything by digitsAfterDecimal
+  if(!missing(df_goal)){
+    df <-
+      df %>%
+        mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(round(., digitsAfterDecimal)))
+  }else{
+    df <-
+      df %>%
+      mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(round(., digitsAfterDecimal)))
+  }
+
   # FULL YR
   # divide values by 1000
   ## df
@@ -781,6 +792,8 @@ fun <- function(
     }
 
   }
+
+
 
 
   # define order for metrics to display in output
