@@ -630,7 +630,7 @@ fun <- function(
   }
   # END add prefix and suffix
 
-  # ifelse(!is.na(metric_cur_yr), paste0(prefix, metric_cur_yr, suffix), NA),
+
   # FULL YR
   # handle % vs ppts for values and rates respectively for prev yr var and op2 var
   if(suffix == "%"){
@@ -669,7 +669,7 @@ fun <- function(
         }
       }
 
-  }else{
+    }else{
 
       df <- df %>% mutate(
         prev_yr_var = ifelse(!is.na(prev_yr_var), paste0(prev_yr_var, "%"), NA)
@@ -729,7 +729,8 @@ fun <- function(
     if(grouping == "~wk_num_in_yr"){ # no goal var for wk view
       df <- df %>%
         mutate_at(
-          vars(prev_yr_var), funs(neg_paren)) #neg_paren() in R/helpers.R
+          vars(prev_yr_var), funs(neg_paren)
+          ) #neg_paren() in R/helpers.R
     }else{
       if(!missing(df_goal)){
         df <- df %>%
