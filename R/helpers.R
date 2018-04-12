@@ -24,7 +24,7 @@ neg_paren <- function(x){ # function for changing negative value format; ie: -15
 
 div_by_1000 <- function(x){
   y <- x/1000
-  round(y, 0)
+  # round(y, 0)
 }
 
 round_sum <- function(x){

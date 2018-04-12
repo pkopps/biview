@@ -175,11 +175,11 @@ fun <- function(
   #     making this function able to consume both daily gain data as well as already grouped and summarised data
   if(grouping == "~wk_num_in_yr"){
     df <- df %>% group_by(yr_num, !!grouping) %>%
-      summarise_at(vars(!!metric), funs(round_sum)) %>%
+      summarise_at(vars(!!metric), funs(sum)) %>%
       filter(wk_num_in_yr %in% wk_nums)
   }else{
     df <- df %>% group_by(yr_num, !!grouping) %>%
-      summarise_at(vars(!!metric), funs(round_sum))
+      summarise_at(vars(!!metric), funs(sum))
   }
 
   # this template is used for new marketplaces (like CA) that do not have at least 12 months of a year's worth of data to create a table
