@@ -123,18 +123,18 @@ fun <- function(
   if(grouping != "~mth_num_in_yr" & !missing(df_rr)) stop("run rate not applicable for groupings other than mth_num_in_yr")
 
   # indicator variable for op2, 3+3, etc.
-  if(!missing(metric_goal)){
-    indicator <- "OP2"
-      if(any(df_goal %>% select(!!metric_goal) %>% pull() %in% 0)) warning("Warning: '0' values in metric_goal argument\n")
-  }else if(!missing(metric_3p9)){
-    indicator <- "3+9"
-  }else if(!missing(metric_6p6)){
-    indicator <- "6+6"
-  }else if(!missing(metric_9p3)){
-    indicator <- "9+3"
-  }else{
-    indicator <- NULL
-  }
+  # if(!missing(metric_goal)){
+  #   indicator <- "OP2"
+  #     if(any(df_goal %>% select(!!metric_goal) %>% pull() %in% 0)) warning("Warning: '0' values in metric_goal argument\n")
+  # }else if(!missing(metric_3p9)){
+  #   indicator <- "3+9"
+  # }else if(!missing(metric_6p6)){
+  #   indicator <- "6+6"
+  # }else if(!missing(metric_9p3)){
+  #   indicator <- "9+3"
+  # }else{
+  #   indicator <- NULL
+  # }
 
   # get relevant wk numbers
   if(grouping == "~wk_num_in_yr"){
