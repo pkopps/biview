@@ -479,18 +479,6 @@ fun <- function(
     }
   }
 
-  ### round everything by digitsAfterDecimal
-  if(!missing(df_goal)){
-    df <-
-      df %>%
-        mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(round(., digitsAfterDecimal)))
-  }else{
-    df <-
-      df %>%
-      mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(round(., digitsAfterDecimal)))
-  }
-
-  # FULL YR
   # divide values by 1000
   ## df
   if(div_by_1000){
@@ -517,6 +505,17 @@ fun <- function(
     if(grouping == "~mth_num_in_yr" & cbr_ytd & !missing(df_goal)){
       df_cbr_ytd <- df_cbr_ytd %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(div_by_1000))
     }
+  }
+
+  ### round everything by digitsAfterDecimal
+  if(!missing(df_goal)){
+    df <-
+      df %>%
+      mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(round(., digitsAfterDecimal)))
+  }else{
+    df <-
+      df %>%
+      mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(round(., digitsAfterDecimal)))
   }
 
   #sparkline # TODO, enforce order of wks <- NOTDONE and mnths <- DONE and DEBUG yr
