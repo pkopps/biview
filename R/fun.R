@@ -232,7 +232,7 @@ fun <- function(
       rename(metric_rr = !!metric_rr) %>%
       mutate(cur_yr_type = "Run Rate")
 
-    cur_yr_df <- suppressMessages(left_join(cur_yr_df, df_rr)) %>%
+    cur_yr_df <- left_join(cur_yr_df, df_rr) %>%
       mutate(metric_cur_yr = if_else(is.na(metric_rr), metric_cur_yr, metric_rr)) %>%
       select(-metric_rr)
 
@@ -507,7 +507,7 @@ fun <- function(
     }
   }
 
-  ### round everything by digitsAfterDecimal
+  ###### round everything by digitsAfterDecimal
   if(!missing(df_goal)){
     df <-
       df %>%
@@ -517,6 +517,22 @@ fun <- function(
       df %>%
       mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(round(., digitsAfterDecimal)))
   }
+  ##df_full_yr
+  if(grouping == "~mth_num_in_yr" & full_yr & missing(df_goal)){
+    df_full_yr <- df_full_yr %>% mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(round(., digitsAfterDecimal)))
+  }
+  if(grouping == "~mth_num_in_yr" & full_yr & !missing(df_goal)){
+    df_full_yr <- df_full_yr %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(round(., digitsAfterDecimal)))
+  }
+  ## df_cbr_ytd
+  if(grouping == "~mth_num_in_yr" & cbr_ytd & missing(df_goal)){
+    df_cbr_ytd <- df_cbr_ytd %>% mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(round(., digitsAfterDecimal)))
+  }
+  if(grouping == "~mth_num_in_yr" & cbr_ytd & !missing(df_goal)){
+    df_cbr_ytd <- df_cbr_ytd %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(round(., digitsAfterDecimal)))
+  }
+
+
 
   #sparkline # TODO, enforce order of wks <- NOTDONE and mnths <- DONE and DEBUG yr
   if(spark){
