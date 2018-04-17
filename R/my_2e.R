@@ -63,6 +63,7 @@ my_2e <- function(
         suffix = suffix,
         spark = spark,
         pop = pop,
+        digitsAfterDecimal = digitsAfterDecimal,
         in_mth_header_op2 = in_mth_header_op2
       )
   }else if(missing(df_rr)){
@@ -90,6 +91,7 @@ my_2e <- function(
         suffix = suffix,
         spark = spark,
         pop = pop,
+        digitsAfterDecimal = digitsAfterDecimal,
         in_mth_header_op2 = in_mth_header_op2
       )
   }else{
@@ -116,7 +118,8 @@ my_2e <- function(
         prefix = prefix,
         suffix = suffix,
         spark = spark,
-        pop = pop
+        pop = pop,
+        digitsAfterDecimal = digitsAfterDecimal
       )
   }
 

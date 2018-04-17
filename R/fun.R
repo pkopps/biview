@@ -232,7 +232,7 @@ fun <- function(
       rename(metric_rr = !!metric_rr) %>%
       mutate(cur_yr_type = "Run Rate")
 
-    cur_yr_df <- left_join(cur_yr_df, df_rr) %>%
+    cur_yr_df <- suppressMessages(left_join(cur_yr_df, df_rr)) %>%
       mutate(metric_cur_yr = if_else(is.na(metric_rr), metric_cur_yr, metric_rr)) %>%
       select(-metric_rr)
 
