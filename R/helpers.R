@@ -1,3 +1,5 @@
+pretty_num <- function(x) { base::prettyNum(x, big.mark = ",") }
+
 month_levels <- c(
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"

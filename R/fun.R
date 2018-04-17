@@ -729,14 +729,14 @@ fun <- function(
     ## add commas (17000 -> 17,000)
     if(grouping == "~wk_num_in_yr"){ # no goal for wk view
       df <- df %>%
-        mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(prettyNum(., big.mark = ",")))
+        mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
     }else{
       if(!missing(df_goal)){
         df <- df %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(prettyNum(., big.mark = ",")))
+          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
       }else{
         df <- df %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(prettyNum(., big.mark = ",")))
+          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
       }
     }
 
@@ -765,7 +765,7 @@ fun <- function(
       if(!missing(df_goal)){
 
         df_full_yr <- df_full_yr %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(prettyNum(., big.mark = ",")))
+          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
 
         df_full_yr <- df_full_yr %>%
           mutate_at(
@@ -774,7 +774,7 @@ fun <- function(
       }else{
 
         df_full_yr <- df_full_yr %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(prettyNum(., big.mark = ",")))
+          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
 
         df_full_yr <- df_full_yr %>%
           mutate_at(
@@ -788,7 +788,7 @@ fun <- function(
       if(!missing(df_goal)){
 
         df_cbr_ytd <- df_cbr_ytd %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(prettyNum(., big.mark = ",")))
+          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
 
         df_cbr_ytd <- df_cbr_ytd %>%
           mutate_at(
@@ -798,7 +798,7 @@ fun <- function(
       }else{
 
         df_cbr_ytd <- df_cbr_ytd %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(prettyNum(., big.mark = ",")))
+          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
 
         df_cbr_ytd <- df_cbr_ytd %>%
           mutate_at(
