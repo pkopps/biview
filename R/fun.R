@@ -215,7 +215,6 @@ fun <- function(
       ungroup() %>%
       rename(metric_prev_yr = !!metric) %>%
       mutate(yr_num = yr_num + 1)
-
   }
 
   # join run rate to cur_yr_df if grouping is mth_num_in_yr
@@ -694,8 +693,6 @@ fun <- function(
           goal_var = ifelse(!is.na(goal_var), paste0(goal_var, "%"), NA)
         )
       }
-
-
 
       if(full_yr){
         df_full_yr <- df_full_yr %>%
