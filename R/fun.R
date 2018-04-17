@@ -696,6 +696,7 @@ fun <- function(
       }
 
 
+
       if(full_yr){
         df_full_yr <- df_full_yr %>%
           mutate(
