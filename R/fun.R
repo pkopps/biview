@@ -466,8 +466,6 @@ fun <- function(
     }
   }
 
-  print(df)
-
   # divide values by 1000
   ## df
   if(div_by_1000){
@@ -495,8 +493,6 @@ fun <- function(
       df_cbr_ytd <- df_cbr_ytd %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(div_by_1000))
     }
   }
-
-  print(df)
 
   ###### round everything by digitsAfterDecimal
   if(!missing(df_goal)){
@@ -763,8 +759,6 @@ fun <- function(
 
   }# neg_val_paren
 
-  print(df)
-
   # apply comma formatting 17000 -> 17,000
   if(commas){
     # df
@@ -777,7 +771,6 @@ fun <- function(
         df <- df %>%
           mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
       }else{
-        print(df)
         df <- df %>%
           mutate(
             metric_cur_yr = metric_cur_yr %>% as.numeric() %>% pretty_num(), ###### BUG AND HACK FIX
