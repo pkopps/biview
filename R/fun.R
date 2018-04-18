@@ -82,6 +82,7 @@ fun <- function(
   digitsAfterDecimal = 2,
   op2_and_var_ph = TRUE,
   month_names = TRUE,
+  # rr_mth_for_header =
   in_mth_header_op2 = TRUE,
   in_mth_header_3p9 = FALSE,
   in_mth_header_6p6 = FALSE,
@@ -567,9 +568,17 @@ fun <- function(
         metric_cur_yr_pop = paste0(metric_cur_yr_pop,"%"),
         metric_prev_yr_pop = paste0(metric_prev_yr_pop,"%")
       ) %>%
+      # mutate(
+      #   metric_cur_yr = paste(
+      #     metric_cur_yr,
+      #     metric_cur_yr_pop, sep = " | "),
+      #   metric_prev_yr = paste(
+      #     metric_prev_yr,
+      #     metric_prev_yr_pop, sep = " | ")
+      # ) %>%
       mutate(
-        metric_cur_yr = paste(metric_cur_yr, metric_cur_yr_pop, sep = " | "),
-        metric_prev_yr = paste(metric_prev_yr, metric_prev_yr_pop, sep = " | ")
+        metric_cur_yr = metric_cur_yr_pop,
+        metric_prev_yr = metric_prev_yr_pop
       ) %>%
       select(-metric_cur_yr_pop, -metric_prev_yr_pop)
 
