@@ -30,7 +30,6 @@ wmy_1e <- function(
   metric_9p3 <- enquo(metric_9p3)
 
   # week
-  message("week")
   w <- # no goals or predictions
     fun(
       df = df,
@@ -48,8 +47,6 @@ wmy_1e <- function(
     )
 
   # month
-  message("month")
-
   if(missing(df_goal)){
     m <-
       fun(
@@ -101,7 +98,6 @@ wmy_1e <- function(
   }
 
   # year
-  message("year")
   y <-
     fun(
       df = df,

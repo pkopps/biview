@@ -6,25 +6,25 @@
 #' @param metric column name for metric (uniform across all the grains of data frames)
 #' @param df_rr data frame containing run rate
 #' @param metric_rr column name from df_rr
-#' @param df_goal
-#' @param metric_goal
-#' @param df_3p9
-#' @param metric_3p9
-#' @param df_6p6
-#' @param metric_6p6
-#' @param df_9p3
-#' @param metric_9p3
-#' @param week_end_dates
-#' @param week_start_dates
-#' @param full_yr
-#' @param cbr_ytd
-#' @param rate
-#' @param new_name
-#' @param commas,
-#' @param neg_var_paren,
-#' @param div_by_1000
-#' @param prefix
-#' @param suffix
+#' @param df_goal data frame containing goal
+#' @param metric_goal column name from df_goal
+#' @param df_3p9 data frame containing 3 plus 9
+#' @param metric_3p9 column name from df_3p9
+#' @param df_6p6 data frame containing 6 plus 6
+#' @param metric_6p6 column name from df_6p6
+#' @param df_9p3 data frame containing 9 plus 3
+#' @param metric_9p3 column name from df_9p3
+#' @param week_end_dates logical. display week end dates in week portion header
+#' @param week_start_dates logical. display week start dates in week portion header
+#' @param full_yr logical. Inlcude full year summation column for month view
+#' @param cbr_ytd logical. Inlcude YTD definition for CBR : Actual values from last completed month
+#' @param rate logical. Adjust logic to handle full year for rates
+#' @param new_name name for metric output. Also creates new labels for previous year, previous year variance, etc.
+#' @param commas format values with commas. ie: 1234000 -> 1,234,000
+#' @param neg_var_paren format variance values with parenthesis. ie: -40.4 -> (40.4)
+#' @param div_by_1000 also an accounting practice; divide all value by 1000. ie: 1234000 -> 1234.00
+#' @param prefix add prefix to values. ie: 2000 -> $2000
+#' @param suffix add suffix to values. ie: 20.54 -> 20.54\%
 #' @param scalar
 #' @param digitsAfterDecimal
 #' @param spark
