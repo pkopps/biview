@@ -573,7 +573,46 @@ fun <- function(
       ) %>%
       select(-metric_cur_yr_pop, -metric_prev_yr_pop)
 
-  }
+  }# end pop
+
+  # apply comma formatting 17000 -> 17,000
+  if(commas){
+    # df
+    ## add commas (17000 -> 17,000)
+    if(grouping == "~wk_num_in_yr"){ # no goal for wk view
+      df <- df %>%
+        mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
+    }else{
+      if(!missing(df_goal)){
+        df <- df %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
+      }else{
+        df <- df %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
+      }
+    }
+
+    # full_yr
+    if(full_yr){
+      if(!missing(df_goal)){
+        df_full_yr <- df_full_yr %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
+      }else{
+        df_full_yr <- df_full_yr %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
+      }
+    }
+
+    if(cbr_ytd){
+      if(!missing(df_goal)){
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
+      }else{
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
+      }
+    }
+  }# commas
 
   # add prefix and suffix
   # for df
@@ -709,7 +748,7 @@ fun <- function(
       }
   }
 
-  ## wrap negative numbers in parenthesis (ie: -7 -> (7))
+  ## wrap negative var numbers in parenthesis (ie: -7 -> (7))
   if(neg_var_paren){
     if(grouping == "~wk_num_in_yr"){ # no goal var for wk view
       df <- df %>%
@@ -758,50 +797,6 @@ fun <- function(
 
 
   }# neg_val_paren
-
-  # apply comma formatting 17000 -> 17,000
-  if(commas){
-    # df
-    ## add commas (17000 -> 17,000)
-    if(grouping == "~wk_num_in_yr"){ # no goal for wk view
-      df <- df %>%
-        mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
-    }else{
-      if(!missing(df_goal)){
-        df <- df %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
-      }else{
-        df <- df %>%
-          mutate(
-            metric_cur_yr = metric_cur_yr %>% as.numeric() %>% pretty_num(), ###### BUG AND HACK FIX
-            metric_prev_yr = metric_prev_yr %>% pretty_num()
-            )
-      }
-    }
-
-    # full_yr
-    if(full_yr){
-      if(!missing(df_goal)){
-        df_full_yr <- df_full_yr %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
-      }else{
-        df_full_yr <- df_full_yr %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
-      }
-    }
-
-    if(cbr_ytd){
-      if(!missing(df_goal)){
-        df_cbr_ytd <- df_cbr_ytd %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
-      }else{
-        df_cbr_ytd <- df_cbr_ytd %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
-      }
-    }
-
-
-  }# commas
 
 
   # define order for metrics to display in output
