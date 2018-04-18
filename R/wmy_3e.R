@@ -62,7 +62,7 @@ wmy_3e <- function(
   rate = FALSE,
   new_name = NULL,
   commas = FALSE,
-  neg_var_paren = FALSE,
+  neg_var_paren = TRUE,
   div_by_1000 = FALSE,
   prefix = "",
   suffix = "",
