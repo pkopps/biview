@@ -7,12 +7,12 @@
 fun(df, metric, grouping, df_rr, metric_rr, df_goal, metric_goal, df_3p9,
   metric_3p9, df_6p6, metric_6p6, df_9p3, metric_9p3, weeks_back = 4,
   week_end_dates = FALSE, week_start_dates = TRUE, cbr_ytd = FALSE,
-  full_yr = FALSE, rate = FALSE, new_name = NULL, accounting = FALSE,
-  div_by_1000 = FALSE, prefix = "", suffix = "", spark = FALSE,
-  pop = FALSE, pop_threshold = 100, scalar = 1, digitsAfterDecimal = 2,
-  op2_and_var_ph = TRUE, month_names = TRUE, in_mth_header_op2 = TRUE,
-  in_mth_header_3p9 = FALSE, in_mth_header_6p6 = FALSE,
-  in_mth_header_9p3 = FALSE)
+  full_yr = FALSE, rate = FALSE, new_name = NULL, commas = FALSE,
+  neg_var_paren = FALSE, div_by_1000 = FALSE, prefix = "", suffix = "",
+  spark = FALSE, pop = FALSE, pop_threshold = 100, scalar = 1,
+  digitsAfterDecimal = 2, op2_and_var_ph = TRUE, month_names = TRUE,
+  in_mth_header_op2 = TRUE, in_mth_header_3p9 = FALSE,
+  in_mth_header_6p6 = FALSE, in_mth_header_9p3 = FALSE)
 }
 \arguments{
 \item{df}{data frame containing metric}
@@ -49,7 +49,9 @@ fun(df, metric, grouping, df_rr, metric_rr, df_goal, metric_goal, df_3p9,
 
 \item{new_name}{name for metric output. Also creates new labels for previous year, previous year variance, etc.}
 
-\item{accounting}{format values as accountants do. ie: 1234000 -> 1,234,000 & -3000 -> (3000)}
+\item{commas}{format values with commas. ie: 1234000 -> 1,234,000}
+
+\item{neg_var_paren}{format variance values with parenthesis. ie: -40.4 -> (40.4)}
 
 \item{div_by_1000}{also an accounting practice; divide all value by 1000. ie: 1234000 -> 1234.00}
 
@@ -71,7 +73,7 @@ performance,
 revenue,
 wk_num_in_yr,
 new_name = "Revenue",
-accounting = TRUE,
+commas = TRUE,
 div_by_1000 = FALSE,
 full_yr = FALSE,
 prefix = "$"
@@ -83,7 +85,7 @@ performance,
 revenue,
 mth_num_in_yr,
 new_name = "Revenue",
-accounting = TRUE,
+commas = TRUE,
 div_by_1000 = FALSE,
 full_yr = FALSE,
 prefix = "$"

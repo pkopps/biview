@@ -1,4 +1,4 @@
-pretty_num <- function(x) { base::prettyNum(x, big.mark = ",") }
+pretty_num <- function(x) { prettyNum(x, big.mark = ",") }
 
 month_levels <- c(
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -26,6 +26,7 @@ neg_paren <- function(x){ # function for changing negative value format; ie: -15
 
 div_by_1000 <- function(x){
   y <- x/1000
+  y %>% as.numeric()
 }
 
 # round_sum <- function(x){

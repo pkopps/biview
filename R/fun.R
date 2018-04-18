@@ -17,7 +17,8 @@
 #' @param cbr_ytd logical. Inlcude YTD definition for CBR : Actual values from last completed month
 #' @param rate logical. Adjust logic to handle full year for rates
 #' @param new_name name for metric output. Also creates new labels for previous year, previous year variance, etc.
-#' @param accounting format values as accountants do. ie: 1234000 -> 1,234,000 & -3000 -> (3000)
+#' @param commas format values with commas. ie: 1234000 -> 1,234,000
+#' @param neg_var_paren format variance values with parenthesis. ie: -40.4 -> (40.4)
 #' @param div_by_1000 also an accounting practice; divide all value by 1000. ie: 1234000 -> 1234.00
 #' @param prefix add prefix to values. ie: 2000 -> $2000
 #' @param suffix add suffix to values. ie: 20.54 -> 20.54\%
@@ -31,7 +32,7 @@
 #' revenue,
 #' wk_num_in_yr,
 #' new_name = "Revenue",
-#' accounting = TRUE,
+#' commas = TRUE,
 #' div_by_1000 = FALSE,
 #' full_yr = FALSE,
 #' prefix = "$"
@@ -43,7 +44,7 @@
 #' revenue,
 #' mth_num_in_yr,
 #' new_name = "Revenue",
-#' accounting = TRUE,
+#' commas = TRUE,
 #' div_by_1000 = FALSE,
 #' full_yr = FALSE,
 #' prefix = "$"
@@ -69,7 +70,8 @@ fun <- function(
   full_yr = FALSE,
   rate = FALSE,
   new_name = NULL,
-  accounting = FALSE,
+  commas = FALSE,
+  neg_var_paren = FALSE,
   div_by_1000 = FALSE,
   prefix = "",
   suffix = "",
@@ -411,20 +413,6 @@ fun <- function(
     }
   }
 
-################
-
-    # handle division for Full Year rates and YTD rates
-
-    # if(grouping == "~yr_num"){ ####### used only if you were to add up 12 months of rates and divide by 12*****
-    #   df <- df %>%
-    #     mutate(
-    #       metric_cur_yr = round((metric_cur_yr / 12), 2),
-    #       metric_prev_yr = round((metric_prev_yr / 12), 2)
-    #     )
-    # }
-
-###################
-
   # FULL YR
   # divide rate full yr values (sum of monthly rates) by 12 (number of month periods)
   if(grouping == "~mth_num_in_yr" & full_yr & rate){
@@ -478,6 +466,8 @@ fun <- function(
     }
   }
 
+  print(df)
+
   # divide values by 1000
   ## df
   if(div_by_1000){
@@ -505,6 +495,8 @@ fun <- function(
       df_cbr_ytd <- df_cbr_ytd %>% mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(div_by_1000))
     }
   }
+
+  print(df)
 
   ###### round everything by digitsAfterDecimal
   if(!missing(df_goal)){
@@ -721,9 +713,60 @@ fun <- function(
       }
   }
 
+  ## wrap negative numbers in parenthesis (ie: -7 -> (7))
+  if(neg_var_paren){
+    if(grouping == "~wk_num_in_yr"){ # no goal var for wk view
+      df <- df %>%
+        mutate_at(
+          vars(prev_yr_var), funs(neg_paren)
+        ) #neg_paren() in R/helpers.R
+    }else{
+      if(!missing(df_goal)){
+        df <- df %>%
+          mutate_at(
+            vars(prev_yr_var, goal_var), funs(neg_paren))
+      }else{
+        df <- df %>%
+          mutate_at(
+            vars(prev_yr_var), funs(neg_paren))
+      }
+    }
 
-  # apply accounting formatting -7437834 -> (7437834); 17000 -> 17,000
-  if(accounting){
+    #df_full_yr
+    if(full_yr){
+      if(!missing(df_goal)){
+        df_full_yr <- df_full_yr %>%
+          mutate_at(
+            vars(prev_yr_var, goal_var), funs(neg_paren))
+      }else{
+        df_full_yr <- df_full_yr %>%
+          mutate_at(
+            vars(prev_yr_var), funs(neg_paren))
+      }
+    }
+
+    #df_cbr_ytd
+    if(cbr_ytd){
+      if(!missing(df_goal)){
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate_at(
+            vars(prev_yr_var, goal_var), funs(neg_paren)
+          )
+      }else{
+        df_cbr_ytd <- df_cbr_ytd %>%
+          mutate_at(
+            vars(prev_yr_var), funs(neg_paren)
+          )
+      }
+    }
+
+
+  }# neg_val_paren
+
+  print(df)
+
+  # apply comma formatting 17000 -> 17,000
+  if(commas){
     # df
     ## add commas (17000 -> 17,000)
     if(grouping == "~wk_num_in_yr"){ # no goal for wk view
@@ -734,81 +777,38 @@ fun <- function(
         df <- df %>%
           mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
       }else{
+        print(df)
         df <- df %>%
-          mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
+          mutate(
+            metric_cur_yr = metric_cur_yr %>% as.numeric() %>% pretty_num(), ###### BUG AND HACK FIX
+            metric_prev_yr = metric_prev_yr %>% pretty_num()
+            )
       }
     }
 
-    ## wrap negative numbers in parenthesis (ie: -7 -> (7))
-    if(grouping == "~wk_num_in_yr"){ # no goal var for wk view
-      df <- df %>%
-        mutate_at(
-          vars(prev_yr_var), funs(neg_paren)
-          ) #neg_paren() in R/helpers.R
-    }else{
-      if(!missing(df_goal)){
-        df <- df %>%
-          mutate_at(
-            vars(prev_yr_var, goal_var), funs(neg_paren))
-      }else{
-        df <- df %>%
-          mutate_at(
-            vars(prev_yr_var), funs(neg_paren))
-      }
-    }
-
-
-    # FULL YR
-    #df_full_yr
+    # full_yr
     if(full_yr){
       if(!missing(df_goal)){
-
         df_full_yr <- df_full_yr %>%
           mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
-
-        df_full_yr <- df_full_yr %>%
-          mutate_at(
-            vars(prev_yr_var, goal_var), funs(neg_paren))
-
       }else{
-
         df_full_yr <- df_full_yr %>%
           mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
-
-        df_full_yr <- df_full_yr %>%
-          mutate_at(
-            vars(prev_yr_var), funs(neg_paren))
-
       }
     }
 
-    #df_cbr_ytd
     if(cbr_ytd){
       if(!missing(df_goal)){
-
         df_cbr_ytd <- df_cbr_ytd %>%
           mutate_at(vars(metric_cur_yr, metric_prev_yr, metric_goal), funs(pretty_num))
-
-        df_cbr_ytd <- df_cbr_ytd %>%
-          mutate_at(
-            vars(prev_yr_var, goal_var), funs(neg_paren)
-            )
-
       }else{
-
         df_cbr_ytd <- df_cbr_ytd %>%
           mutate_at(vars(metric_cur_yr, metric_prev_yr), funs(pretty_num))
-
-        df_cbr_ytd <- df_cbr_ytd %>%
-          mutate_at(
-            vars(prev_yr_var), funs(neg_paren))
-
       }
     }
 
-  }
 
-
+  }# commas
 
 
   # define order for metrics to display in output
