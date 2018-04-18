@@ -20,7 +20,8 @@
 #' @param cbr_ytd
 #' @param rate
 #' @param new_name
-#' @param accounting
+#' @param commas,
+#' @param neg_var_paren,
 #' @param div_by_1000
 #' @param prefix
 #' @param suffix
@@ -60,7 +61,8 @@ wmy_3e <- function(
   cbr_ytd = TRUE,
   rate = FALSE,
   new_name = NULL,
-  accounting = FALSE,
+  commas = FALSE,
+  neg_var_paren = FALSE,
   div_by_1000 = FALSE,
   prefix = "",
   suffix = "",
@@ -94,7 +96,8 @@ wmy_3e <- function(
       week_end_dates = week_end_dates,
       week_start_dates = week_start_dates,
       new_name = new_name,
-      accounting = accounting,
+      commas = commas,
+      neg_var_paren = neg_var_paren,
       div_by_1000 = div_by_1000,
       prefix = prefix,
       suffix = suffix,
@@ -127,7 +130,8 @@ wmy_3e <- function(
         cbr_ytd = cbr_ytd,
         rate = rate,
         new_name = new_name,
-        accounting = accounting,
+        commas = commas,
+        neg_var_paren = neg_var_paren,
         div_by_1000 = div_by_1000,
         prefix = prefix,
         suffix = suffix,
@@ -158,7 +162,8 @@ wmy_3e <- function(
         cbr_ytd = cbr_ytd,
         rate = rate,
         new_name = new_name,
-        accounting = accounting,
+        commas = commas,
+        neg_var_paren = neg_var_paren,
         div_by_1000 = div_by_1000,
         prefix = prefix,
         suffix = suffix,

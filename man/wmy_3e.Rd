@@ -7,9 +7,9 @@
 wmy_3e(df_wk, df_mth, df_yr, metric, df_rr, metric_rr, df_goal, metric_goal,
   df_3p9, metric_3p9, df_6p6, metric_6p6, df_9p3, metric_9p3,
   week_end_dates = FALSE, week_start_dates = TRUE, full_yr = TRUE,
-  cbr_ytd = TRUE, rate = FALSE, new_name = NULL, accounting = FALSE,
-  div_by_1000 = FALSE, prefix = "", suffix = "", scalar = 1,
-  digitsAfterDecimal = 2, spark = FALSE, pop = FALSE,
+  cbr_ytd = TRUE, rate = FALSE, new_name = NULL, commas = FALSE,
+  neg_var_paren = FALSE, div_by_1000 = FALSE, prefix = "", suffix = "",
+  scalar = 1, digitsAfterDecimal = 2, spark = FALSE, pop = FALSE,
   pop_threshold = 100, in_mth_header_op2 = TRUE,
   in_mth_header_3p9 = FALSE, in_mth_header_6p6 = FALSE,
   in_mth_header_9p3 = FALSE)
