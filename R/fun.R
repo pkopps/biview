@@ -898,7 +898,7 @@ fun <- function(
     names(df)[2:13] <- month.abb
       if(in_mth_header_op2){
         month(Sys.Date()) + 2 -> start_pos
-        names(df)[start_pos-1:13] <- paste0(names(df)[start_pos-1:13], " (OP2)")
+        names(df)[(start_pos-1):13] <- paste0(names(df)[(start_pos-1):13], " (OP2)")
       }
   }
 
