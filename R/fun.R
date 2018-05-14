@@ -908,6 +908,6 @@ fun <- function(
   # }
 
   # return data frame
-  df
+  df %>% head(2)
 
 }
