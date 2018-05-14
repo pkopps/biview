@@ -885,7 +885,8 @@ fun <- function(
   # }
   if(!is.null(new_name)){
     df <- df %>% mutate(
-              metric = c(new_name, "Prior Year", "Variance vs. Prior Year", "OP2 Plan", "Variance vs. Plan")
+              metric = c(new_name, "", "", "", ""),
+              metric_part = c("Current Year", "Prior Year", "Variance vs. Prior Year", "OP2 Plan", "Variance vs. Plan")
             )
   }
 
@@ -908,6 +909,10 @@ fun <- function(
   # }
 
   # return data frame
-  df %>% head(2)
+  if(grouping != "~yr_num"){
+    df %>% select(metric, metric_part, everything()) %>% head(2)
+  }else{
+    df %>% select(metric, everything()) %>% head(2)
+  }
 
 }

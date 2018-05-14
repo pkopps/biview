@@ -53,8 +53,6 @@ wmy_1e <- function(
         df = df,
         metric = !!metric,
         grouping = mth_num_in_yr,
-        # df_goal = df_goal,
-        # metric_goal = !!metric_goal,
         df_3p9 = df_3p9,
         metric_3p9 = !!metric_3p9,
         df_6p6 = df_6p6,
@@ -124,7 +122,7 @@ wmy_1e <- function(
 
   # join wmy together
   message("join")
-  df <- right_join(w, m, by = c('metric' = 'metric')) %>% left_join(y, by = c('metric' = 'metric'))
+  df <- right_join(w, m, by = c('metric' = 'metric', 'metric_part' = 'metric_part')) %>% left_join(y, by = c('metric' = 'metric'))
 
   # return df
   message("return")
