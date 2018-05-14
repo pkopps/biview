@@ -81,9 +81,9 @@ fun <- function(
   scalar = 1,
   digitsAfterDecimal = 2,
   op2_and_var_ph = TRUE,
-  month_names = TRUE,
+  month_names = FALSE,
   # rr_mth_for_header =
-  in_mth_header_op2 = TRUE,
+  in_mth_header_op2 = FALSE,
   in_mth_header_3p9 = FALSE,
   in_mth_header_6p6 = FALSE,
   in_mth_header_9p3 = FALSE
@@ -829,7 +829,7 @@ fun <- function(
 
     df <- df %>%
       # select(-cur_yr_type) %>%
-      select(-mth_name) %>% ######### throws warning because of the factor order of mth_names if not removed
+      # select(-mth_name) %>% ######### throws warning because of the factor order of mth_names if not removed
       gather(metric, value, -!!grouping) %>%
       spread(!!grouping, value) %>%
       arrange(

@@ -10,8 +10,8 @@ fun(df, metric, grouping, df_rr, metric_rr, df_goal, metric_goal, df_3p9,
   full_yr = FALSE, rate = FALSE, new_name = NULL, commas = FALSE,
   neg_var_paren = FALSE, div_by_1000 = FALSE, prefix = "", suffix = "",
   spark = FALSE, pop = FALSE, pop_threshold = 100, scalar = 1,
-  digitsAfterDecimal = 2, op2_and_var_ph = TRUE, month_names = TRUE,
-  in_mth_header_op2 = TRUE, in_mth_header_3p9 = FALSE,
+  digitsAfterDecimal = 2, op2_and_var_ph = TRUE, month_names = FALSE,
+  in_mth_header_op2 = FALSE, in_mth_header_3p9 = FALSE,
   in_mth_header_6p6 = FALSE, in_mth_header_9p3 = FALSE)
 }
 \arguments{
